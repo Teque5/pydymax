@@ -5,7 +5,7 @@ This is a simple geodetic conversion tool for conversion from Lat/Lon to Dymaxio
 though pixel coordinate conversion becomes
 ![Dymax Blue Marble](data-dymax/dymax_bmng.png)
 
-The conversion routine is as follows. The specified (lon,lat) pair is first converted to spherical coordinates, then cartesian. That value is then used to determine the face number (0-19) and sub-triangle (0-5) on the icosahedron. All this information is then fed into a final subroutine that outputs an (X,Y) position pair suitable for mapping. Results from conversion are cached so repeated calls query a lookup-table first. Note that this is not WGS84 accurate due to the spherical conversion routine in use.
+The conversion routine is as follows. The specified (lon,lat) pair is first converted to spherical coordinates, then cartesian. That value is then used to determine the face number (0-19) and sub-triangle (0-5) on the icosahedron. All this information is then fed into a final subroutine that outputs an (X,Y) position pair suitable for mapping. Results from conversion are cached so repeated calls query a lookup-table first. Note that this is not [WGS84](http://en.wikipedia.org/wiki/World_Geodetic_System#A_new_World_Geodetic_System:_WGS_84) accurate due to the spherical conversion routine in use.
 
 ![Icosahedron Faces](data-dymax/dymax_earthmeridianstriangles.png)
 
