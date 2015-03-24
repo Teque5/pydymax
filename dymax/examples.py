@@ -11,8 +11,11 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from sys import stdout
 basemap_directory = '/usr/share/basemap/data/'
 from PIL import Image, ImageOps # use Pillow for python3 (pip install) or PIL for python2.x
+data_directory = '../data-rect' # Contains rectilinear 
+output_directory = '../data-dymax'
 
 import convert
 import constants
@@ -290,7 +293,7 @@ def plotLandmasses(verbose=True, save=False, show=True, dpi=300, resolution='c')
         plt.show()
     else: plt.close()
     
-def convertRectImage2DymaxImage(filename, verbose=True, scale = 300, speedup = 1, save=False, show=True):
+def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale = 300, speedup = 1, save=False, show=True):
     '''
     Convert rectilinear image to dymax projection image.
     
@@ -307,7 +310,7 @@ def convertRectImage2DymaxImage(filename, verbose=True, scale = 300, speedup = 1
     A speedup value of 10 reduces compute time to 
     '''
     start = time.time()
-    im = Image.open(basemap_directory+"bmng.jpg") #Can be many different formats. #15 vertical and horizontal pixels per degree
+    im = Image.open(inFilename) #Can be many different formats. #15 vertical and horizontal pixels per degree
     pix = im.load()
     if verbose: print(':: input image resolution =',im.size) # Get the width and hight of the image for iterating over
 
@@ -321,7 +324,9 @@ def convertRectImage2DymaxImage(filename, verbose=True, scale = 300, speedup = 1
     xsize,ysize = im.size
     for i, lon in enumerate(np.linspace(-180,180,xsize/speedup,endpoint=True)):
         i*= speedup
-        if i % 20 == 0: print('{:+07.2f} '.format(lon),end='') # I would add flush=True, but thats only in python3.3+
+        if i % 20 == 0:
+            print('{:+07.2f} '.format(lon),end='')
+            stdout.flush() # I would add flush=True to print, but thats only in python3.3+
         for j, lat in enumerate(np.linspace(90,-90,ysize/speedup,endpoint=True)):
             j*= speedup
             newx,newy = convert.lonlat2dymax(lon,lat)
@@ -346,7 +351,7 @@ def convertRectImage2DymaxImage(filename, verbose=True, scale = 300, speedup = 1
     if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(numpoints,numpoints/(time.time()-start),time.time()-start))
     plt.figure(figsize=(20,12),frameon=False)
     plt.gca().axis('off')
-    if save: dymaximg.save('dymax_bluemarble.png', format='PNG')
+    if save: dymaximg.save(outFilename, format='PNG')
     if show:
         plt.tight_layout()
         plt.imshow(dymaximg)
@@ -365,8 +370,8 @@ def runExamples(verbose=True, save=False, show=True, resolution='c'):
     plotEarthSubTriangles(save=save, show=show, resolution=resolution)
     plotGrid(save=save, show=show)
     plotLandmasses(save=save, show=show, resolution=resolution)
-    convertRectImage2DymaxImage(basemap_directory+'bmng.jpg', save=save, show=show)
-    convertRectImage2DymaxImage(basemap_directory+'etopo1.jpg', save=save, show=show)
+    convertRectImage2DymaxImage(basemap_directory+'bmng.jpg','dymax_bmng.png', save=save, show=show)
+    convertRectImage2DymaxImage(basemap_directory+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
     
 if __name__ == '__main__':
     runExamples()
