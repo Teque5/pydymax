@@ -1,4 +1,4 @@
-# Dymaxion Projection Module
+# Dymaxion Projection Python Module
 This is a simple geodetic conversion tool for conversion from Lat/Lon to Dymaxion Fuller Map Projection Coordinates
 
 ![Rectilinear Blue Marble](data-rect/bmng.jpg)
@@ -12,6 +12,8 @@ The conversion routine is as follows. The specified (lon,lat) pair is first conv
 Technically, to unfold the earth into an icosahedron, we must first consider slicing the surface using various intersecting great circle patterns. This results in 20 spherical triangles. Such spherical triangles Buckminster Fuller called LCD (Lowest Common Dinominator) triangles.
 
 ![LCD Triangles](data-dymax/dymax_earthsubtriangles.png)
+
+All images in `/data-dymax` and on this page are created by running `dymax.examples.runExamples()`.
 
 ## Dependencies
 This module is tested on Python 2.7.6 and 3.4.0
