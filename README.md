@@ -5,15 +5,19 @@ This is a simple geodetic conversion tool for conversion from Lat/Lon to Dymaxio
 though pixel coordinate conversion becomes
 ![Dymax Blue Marble](data-dymax/dymax_bmng.png)
 
-The conversion routine is as follows. The specified (lon,lat) pair is first converted to spherical coordinates, then cartesian. That value is then used to determine the face number (0-19) and sub-triangle (0-5) of the icosahedron. All this information is then fed into a final subroutine that outputs an (X,Y) position pair suitable for mapping. Results from conversion are cached so repeated calls query a lookup-table first. Note that this is not WGS84 accurate.
+The conversion routine is as follows. The specified (lon,lat) pair is first converted to spherical coordinates, then cartesian. That value is then used to determine the face number (0-19) and sub-triangle (0-5) on the icosahedron. All this information is then fed into a final subroutine that outputs an (X,Y) position pair suitable for mapping. Results from conversion are cached so repeated calls query a lookup-table first. Note that this is not WGS84 accurate due to the spherical conversion routine in use.
 
 ![Icosahedron Faces](data-dymax/dymax_earthmeridianstriangles.png)
 
-Technically, to unfold the earth into an icosahedron, we must first consider slicing the surface using various intersecting great circle patterns. This results in 20 spherical triangles. Such spherical triangles Buckminster Fuller called LCD (Lowest Common Dinominator) triangles.
+Technically, to unfold the earth into an icosahedron, we must first consider slicing the surface using various intersecting great circle patterns. This results in 20 spherical triangles. Each spherical triangle contain 6 of what Buckminster Fuller called LCD (Lowest Common Denominator) triangles. In *pydymax* these are ordered in a clockwise fashion.
 
 ![LCD Triangles](data-dymax/dymax_earthsubtriangles.png)
 
 All images in `/data-dymax` and on this page are created by running `dymax.examples.runExamples()`.
+
+## To-Do List
+1) Replace spherical coordinate conversion with Earth-Centered-Earth-Fixed for much better accuracy.
+2) Get documentation working correctly.
 
 ## Dependencies
 This module is tested on Python 2.7.6 and 3.4.0
