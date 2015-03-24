@@ -19,6 +19,12 @@ All images in `/data-dymax` and on this page are created by running `dymax.examp
 1) Replace spherical coordinate conversion with Earth-Centered-Earth-Fixed for much better accuracy.
 2) Get documentation working correctly.
 
+## Install
+git clone https://github.com/Teque5/pydymax
+python setup.py install
+import dymax
+dymax.examples.plotLandmasses()
+
 ## Dependencies
 This module is tested on Python 2.7.6 and 3.4.0
 * [Numpy](numpy.org)
