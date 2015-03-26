@@ -20,11 +20,12 @@ All images in `/data-dymax` and on this page are created by running `dymax.examp
 2) Get documentation working correctly.
 
 ## Install
-```bash
+```
 git clone https://github.com/Teque5/pydymax
 python setup.py install
-import dymax
-dymax.examples.plotLandmasses()
+ipython
+>>> import dymax
+>>> dymax.examples.plotLandmasses()
 ```
 
 ## Dependencies

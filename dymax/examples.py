@@ -12,24 +12,29 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 from sys import stdout
-basemap_directory = '/usr/share/basemap/data/'
 from PIL import Image, ImageOps # use Pillow for python3 (pip install) or PIL for python2.x
-data_directory = '../data-rect' # Contains rectilinear 
-output_directory = '../data-dymax'
+#data_directory = '../data-rect/' # Contains rectilinear plots and coastlines
+
+import inspect,os
+current_directory = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) 
+data_directory = current_directory + '../data-rect/'
+
+print('$$',data_directory)
 
 import convert
 import constants
 
+
 def getIslands(verbose=True, resolution='c'):
     '''
-    Get cloastlines from GSHHS:
+    Get coastlines from GSHHS:
     Global Self-consistent Hierarchical High-resolution Shorelines
     Returns outlines in (Lon,Lat) Geodesic and (X,Y) Dymax format.
     
     Valid resolutions:  c (crude), l (low), i (intermediate), h (high), f (full)
     '''
     ### Load Coastlines
-    binfile = open(basemap_directory+'gshhs_'+resolution+'.dat','rb')
+    binfile = open(data_directory+'gshhs_'+resolution+'.dat','rb')
     data = np.fromfile(binfile,'<f4')
     data = data.reshape(len(data)/2,2)
 
@@ -40,7 +45,7 @@ def getIslands(verbose=True, resolution='c'):
     if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(len(dymaxdata),len(dymaxdata)/(time.time()-start),time.time()-start))
 
     ### Load Metadata
-    with open(basemap_directory+'gshhsmeta_'+resolution+'.dat','r') as derp:
+    with open(data_directory+'gshhsmeta_'+resolution+'.dat','r') as derp:
         places = derp.read()
         places = places.split('\n')
 
@@ -60,7 +65,7 @@ def getIslands(verbose=True, resolution='c'):
     return lonlat_islands, dymax_islands
 
 def plotTriangles(verbose=True, save=False, show=True, dpi=300):
-    '''Draw Dymax Triangles'''
+    '''Draw Dymax Spherical Triangles'''
     plt.figure(figsize=(20,12))
     for jdx in range(constants.facecount):
         if jdx == 8 or jdx == 15: continue
@@ -370,8 +375,8 @@ def runExamples(verbose=True, save=False, show=True, resolution='c'):
     plotEarthSubTriangles(save=save, show=show, resolution=resolution)
     plotGrid(save=save, show=show)
     plotLandmasses(save=save, show=show, resolution=resolution)
-    convertRectImage2DymaxImage(basemap_directory+'bmng.jpg','dymax_bmng.png', save=save, show=show)
-    convertRectImage2DymaxImage(basemap_directory+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
+    convertRectImage2DymaxImage(data_directory+'bmng.jpg','dymax_bmng.png', save=save, show=show)
+    convertRectImage2DymaxImage(data_directory+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
     
 if __name__ == '__main__':
     runExamples()

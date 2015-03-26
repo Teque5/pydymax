@@ -13,6 +13,6 @@ setup(name='dymax.py',
       url=' http://teque5.com',
       packages=['dymax'],
       long_description='Geodetic Conversion from Lat/Lon to Dymaxion Fuller Projection',
-      license='',
+      license='Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)',
       platforms=['any'],
      )
