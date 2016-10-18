@@ -2,22 +2,20 @@
 '''
 Dymaxion Projection Examples (Requires PIL, Matplotlib, Basemap-data)
 '''
-
 from __future__ import division, print_function # 3.x Compliant
-
-import numpy as np
+import os
+import inspect
 import math
 import time
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 from sys import stdout
 from PIL import Image, ImageOps # use Pillow for python3 (pip install) or PIL for python2.x
 
-import inspect,os
-current_directory = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 # Contains rectilinear plots and coastlines
-data_directory = current_directory + os.sep + '..' + os.sep + 'data-rect' + os.sep
+data_directory = os.getcwd() + os.sep + '..' + os.sep + 'data-rect' + os.sep
 
 print('$$',data_directory)
 
