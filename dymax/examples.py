@@ -152,16 +152,16 @@ def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resol
         faces.append(polygon)
 
     colors = 100*np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.jet, alpha=0.7,linewidths=0.)
-    f = PatchCollection(faces, cmap=plt.cm.jet, alpha=0.3,linewidths=1.)
+    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=0.7, linewidths=0.)
+    f = PatchCollection(faces, cmap=plt.cm.viridis, alpha=0.3, linewidths=1.)
     p.set_array(np.array(colors))
     f.set_array(np.array(colors))
     plt.gca().add_collection(p)
     plt.gca().add_collection(f)
-    if verbose: print(':: plotted',len(patches),'coastlines')
-    plt.xlim(-180,180)
-    plt.ylim(-90,90)
-    if save: plt.savefig('dymax_rectilineartriangles.png',bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
+    if verbose: print(':: plotted', len(patches), 'coastlines')
+    plt.xlim(-180, 180)
+    plt.ylim(-90, 90)
+    if save: plt.savefig('dymax_rectilineartriangles.png', bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
@@ -210,7 +210,7 @@ def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resoluti
         patches.append(polygon)
 
     colors = 100*np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.jet, alpha=.5,linewidths=0.)
+    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=.5,linewidths=0.)
     p.set_array(np.array(colors))
     plt.gca().add_collection(p)
     if verbose: print(':: plotted',len(patches),'coastlines')
@@ -241,7 +241,7 @@ def plotGrid(verbose=True, save=False, show=True, dpi=300):
         patches.append(Polygon(np.array([x,y]).T,closed=False, fill=True))
 
     colors = 100*np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.jet, alpha=1,linewidths=0.)
+    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=1,linewidths=0.)
     p.set_array(np.array(colors))
     plt.gca().add_collection(p)
     if verbose: print(':: plotted',len(patches),'coastlines')
@@ -274,17 +274,17 @@ def plotLandmasses(verbose=True, save=False, show=True, dpi=300, resolution='c')
 
     plt.figure(figsize=(20,12),frameon=False)
     colors = 100*np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.jet, alpha=1,linewidths=0.)
+    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=1, linewidths=0.)
     p.set_array(np.array(colors))
     plt.gca().add_collection(p)
-    if verbose: print(':: plotted',len(patches),'coastlines')
+    if verbose: print(':: plotted', len(patches), 'coastlines')
     plt.gca().set_aspect('equal')
-    plt.gca().set_xlim([0,5.5])
-    plt.gca().set_ylim([0,2.6])
+    plt.gca().set_xlim([0, 5.5])
+    plt.gca().set_ylim([0, 2.6])
     plt.gca().get_xaxis().set_visible(False)
     plt.gca().get_yaxis().set_visible(False)
     plt.gca().axis('off')
-    if save: plt.savefig('dymax_landmasses.png',bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
+    if save: plt.savefig('dymax_landmasses.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
@@ -322,11 +322,11 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300
     for i, lon in enumerate(np.linspace(-180,180,xsize/speedup,endpoint=True)):
         i*= speedup
         if i % 20 == 0:
-            print('{:+07.2f} '.format(lon),end='')
+            print('{:+07.2f} '.format(lon), end='')
             stdout.flush() # I would add flush=True to print, but thats only in python3.3+
-        for j, lat in enumerate(np.linspace(90,-90,ysize/speedup,endpoint=True)):
+        for j, lat in enumerate(np.linspace(90, -90, ysize/speedup, endpoint=True)):
             j*= speedup
-            newx,newy = convert.lonlat2dymax(lon,lat)
+            newx,newy = convert.lonlat2dymax(lon, lat)
             newx = int(newx*scale)-1
             newy = int(newy*scale)
             try:dymaximg.putpixel((newx, newy), pix[i,j])
