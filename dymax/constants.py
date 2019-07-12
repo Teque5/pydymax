@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
-'''
-Constants for Dymaxion Projection Module
-'''
+'''Constants for Dymaxion Projection Module'''
 from __future__ import division, print_function # 3.x Compliant
 import numpy as np
 import math
