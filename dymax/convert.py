@@ -13,7 +13,7 @@ distance = lambda vectorA, vectorB: np.linalg.norm(np.array(vectorA)-np.array(ve
 
 ### Dymax Conversion Main Routine
 @lru_cache(maxsize=2**12)
-def lonlat2dymax(lng, lat, getlcd=False):
+def lonlat2dymax(lon, lat, getlcd=False):
     '''
     Lon Lat 2 Dymax XY
 
@@ -27,7 +27,7 @@ def lonlat2dymax(lng, lat, getlcd=False):
     # Convert the given(long.,lat.) coordinate into spherical
     # polar coordinates(r, theta, phi) with radius=1.
     # Angles are given in radians, NOT degrees.
-    theta, phi = lonlat2spherical(lng, lat)
+    theta, phi = lonlat2spherical(lon, lat)
 
     # convert the spherical polar coordinates into cartesian
     # (x, y, z) coordinates.
@@ -102,7 +102,7 @@ def face2dymax(faceIdx, push=.9999, atomic=False):
     points[-1] = points[0] # Loop Back to Start
     return points
 
-def lonlat2spherical(lng, lat):
+def lonlat2spherical(lon, lat):
     '''
     Convert(long., lat.) point into spherical polar coordinates
     with r=radius=1.  Angles are given in radians.
@@ -112,8 +112,8 @@ def lonlat2spherical(lng, lat):
     (0.017453292519943295, 3.12413936106985)
     '''
     h_theta = 90.0 - lat
-    h_phi = lng
-    if lng < 0.0: h_phi = lng + 360.0
+    h_phi = lon
+    if lon < 0.0: h_phi = lon + 360.0
     theta = math.radians(h_theta)
     phi = math.radians(h_phi)
     return theta, phi
