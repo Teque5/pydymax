@@ -62,7 +62,7 @@ def plotTriangles(verbose=True, save=False, show=True, dpi=300):
         if jdx == 8 or jdx == 15: continue
         points = convert.face2dymax(jdx,push=.95)
         xcenter,ycenter = convert.dymax_centers[jdx]
-        plt.text(xcenter,ycenter,str(jdx))
+        plt.text(xcenter, ycenter, str(jdx), ha='center', va='center')
         plt.plot(points[:,0],points[:,1],lw=5,alpha=.5)
     plt.gca().set_xlim([0,5.5])
     plt.gca().set_ylim([0,2.6])
@@ -110,7 +110,9 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
         if jdx == 8 or jdx == 15: continue
         points = convert.face2dymax(jdx, push=.95)
         xcenter, ycenter = convert.dymax_centers[jdx]
-        plt.text(xcenter, ycenter, str(jdx), size='x-large')
+        plt.text(
+            xcenter, ycenter, str(jdx),
+            size='x-large', ha='center', va='center')
         plt.plot(points[:, 0], points[:,1], lw=5, alpha=.7)
 
     ### Draw Landmasses
@@ -119,7 +121,7 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
         polygon = Polygon(np.array(island))#, closed=False, fill=False)
         patches.append(polygon)
 
-    p = PatchCollection(patches, alpha=.3, linewidths=1.,facecolors=None)
+    p = PatchCollection(patches, alpha=.3, linewidths=1., facecolors=None)
     colors = 100*np.random.random(len(patches))
     p.set_array(np.array(colors))
     plt.gca().add_collection(p)
@@ -127,7 +129,7 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
     plt.gca().set_xlim([0, 5.5])
     plt.gca().set_ylim([0, 2.6])
     plt.gca().set_aspect('equal')
-    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
+    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
@@ -185,7 +187,10 @@ def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resoluti
     ### Draw LCD Triangle Indices
     colorlist = 'rgcmyg'
     for val in range(10000):
-        plt.text(xs[val],ys[val],str(lcds[val]),color=colorlist[lcds[val]],ha='center',va='center',size='small',alpha=.5)
+        plt.text(
+            xs[val], ys[val], str(lcds[val]),
+            color=colorlist[lcds[val]], alpha=.5,
+            ha='center', va='center', size='small')
 
     ### Draw Large Fuller Triangles
     for jdx in range(constants.facecount):
@@ -199,8 +204,8 @@ def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resoluti
         if jdx == 8 or jdx == 15: continue
         points = convert.face2dymax(jdx, push=.999, atomic=True)
         xcenter, ycenter = convert.dymax_centers[jdx]
-        plt.text(xcenter,ycenter,str(jdx),size='xx-large',ha='center',va='center')
-        plt.plot(points[:,0],points[:,1],lw=1,alpha=1,color='k',ls='dotted')
+        plt.text(xcenter, ycenter, str(jdx), size='xx-large', ha='center', va='center')
+        plt.plot(points[:,0], points[:,1], lw=1, alpha=1, color='k', ls='dotted')
 
     ### Draw Landmasses
     patches = []
