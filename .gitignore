@@ -1,0 +1,8 @@
+# python artifacts
+*.pyc
+
+# package artifacts
+.eggs/
+build/
+dist/
+dymax.egg-info/
