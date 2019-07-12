@@ -1,51 +1,43 @@
-#!/usr/bin/env python
-'''
-Dymaxion Projection Examples (Requires PIL, Matplotlib, Basemap-data)
-'''
-
-from __future__ import division, print_function # 3.x Compliant
-
-import numpy as np
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
+'''Dymaxion Projection Examples'''
 import math
-import time
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pkg_resources
+import time
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from PIL import Image, ImageOps
 from sys import stdout
-from PIL import Image, ImageOps # use Pillow for python3 (pip install) or PIL for python2.x
-#data_directory = '../data-rect/' # Contains rectilinear plots and coastlines
 
-import inspect,os
-current_directory = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) 
-data_directory = current_directory + '../data-rect/'
+PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
 
-print('$$',data_directory)
-
-import convert
-import constants
-
+from . import convert
+from . import constants
 
 def getIslands(verbose=True, resolution='c'):
     '''
     Get coastlines from GSHHS:
     Global Self-consistent Hierarchical High-resolution Shorelines
     Returns outlines in (Lon,Lat) Geodesic and (X,Y) Dymax format.
-    
+
     Valid resolutions:  c (crude), l (low), i (intermediate), h (high), f (full)
     '''
     ### Load Coastlines
-    binfile = open(data_directory+'gshhs_'+resolution+'.dat','rb')
-    data = np.fromfile(binfile,'<f4')
-    data = data.reshape(len(data)/2,2)
+    binfile = open(PKG_DATA+'gshhs_'+resolution+'.dat', 'rb')
+    data = np.fromfile(binfile, '<f4')
+    data = data.reshape(len(data)//2, 2)
 
     start = time.time()
     dymaxdata = np.zeros_like(data)
     for idx, row in enumerate(data):
-        dymaxdata[idx] = convert.lonlat2dymax(row[0],row[1])
+        dymaxdata[idx] = convert.lonlat2dymax(row[0], row[1])
     if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(len(dymaxdata),len(dymaxdata)/(time.time()-start),time.time()-start))
 
     ### Load Metadata
-    with open(data_directory+'gshhsmeta_'+resolution+'.dat','r') as derp:
+    with open(PKG_DATA+'gshhsmeta_'+resolution+'.dat','r') as derp:
         places = derp.read()
         places = places.split('\n')
 
@@ -82,14 +74,14 @@ def plotTriangles(verbose=True, save=False, show=True, dpi=300):
         plt.tight_layout()
         plt.show()
     else: plt.close()
-    
+
 def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Dymax Triangles, All countries, and Meridians'''
     lonlat_islands, dymax_islands = getIslands(resolution)
     n = 1000
     plt.figure(figsize=(20,12))
     plt.title('Dymaxion Map Projection')
-    
+
     ### Dymaxion Latitude Meridians
     lons = np.linspace(-180,180,n)
     latgrid = np.linspace(-85,85,35)
@@ -121,13 +113,13 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
         xcenter,ycenter = convert.dymax_centers[jdx]
         plt.text(xcenter,ycenter,str(jdx),size='x-large')
         plt.plot(points[:,0],points[:,1],lw=5,alpha=.7)
-        
+
     ### Draw Landmasses
     patches = []
     for island in dymax_islands:
         polygon = Polygon(np.array(island))#, closed=False, fill=False)
         patches.append(polygon)
-    
+
     p = PatchCollection(patches, alpha=.3, linewidths=1.,facecolors=None)
     colors = 100*np.random.random(len(patches))
     p.set_array(np.array(colors))
@@ -135,13 +127,13 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
     if verbose: print(':: plotted',len(patches),'coastlines')
     plt.gca().set_xlim([0,5.5])
     plt.gca().set_ylim([0,2.6])
-    plt.gca().set_aspect('equal')   
+    plt.gca().set_aspect('equal')
     if save: plt.savefig('dymax_earthmeridianstriangles.png',bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
     else: plt.close()
-    
+
 def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     lonlat_islands, dymax_islands = getIslands(resolution)
     plt.figure(figsize=(20,12))
@@ -158,7 +150,7 @@ def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resol
             derp[vtex] = constants.lon_lat_verts[constants.vert_indices[face,vtex]]
         polygon = Polygon(derp,closed=False,fill=True)
         faces.append(polygon)
-    
+
     colors = 100*np.random.random(len(patches))
     p = PatchCollection(patches, cmap=plt.cm.jet, alpha=0.7,linewidths=0.)
     f = PatchCollection(faces, cmap=plt.cm.jet, alpha=0.3,linewidths=1.)
@@ -174,13 +166,13 @@ def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resol
         plt.tight_layout()
         plt.show()
     else: plt.close()
-    
+
 def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Each Icosahedron Face has six sub-triangles that are splitting on.'''
     lonlat_islands, dymax_islands = getIslands(resolution)
-    
+
     plt.figure(figsize=(20,12))
-    
+
     xs, ys = [],[]
     lcds = []
     for i in range(10000):
@@ -216,7 +208,7 @@ def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resoluti
     for island in dymax_islands:
         polygon = Polygon(np.array(island), closed=True, fill=True)
         patches.append(polygon)
-    
+
     colors = 100*np.random.random(len(patches))
     p = PatchCollection(patches, cmap=plt.cm.jet, alpha=.5,linewidths=0.)
     p.set_array(np.array(colors))
@@ -225,13 +217,13 @@ def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resoluti
     plt.gca().set_xlim([0,5.5])
     plt.gca().set_ylim([0,2.6])
     plt.gca().set_aspect('equal')
-    
+
     if save: plt.savefig('dymax_earthsubtriangles.png',bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
     else: plt.close()
-    
+
 def plotGrid(verbose=True, save=False, show=True, dpi=300):
     '''Show Dymaxion Grid'''
     plt.figure(figsize=(20,12))
@@ -247,7 +239,7 @@ def plotGrid(verbose=True, save=False, show=True, dpi=300):
             #print(xt,yt,i,vert)
         #plt.plot(x,y,'k',lw=.1)
         patches.append(Polygon(np.array([x,y]).T,closed=False, fill=True))
-    
+
     colors = 100*np.random.random(len(patches))
     p = PatchCollection(patches, cmap=plt.cm.jet, alpha=1,linewidths=0.)
     p.set_array(np.array(colors))
@@ -259,26 +251,26 @@ def plotGrid(verbose=True, save=False, show=True, dpi=300):
     plt.gca().get_xaxis().set_visible(False)
     plt.gca().get_yaxis().set_visible(False)
     plt.gca().axis('off')
-    
+
     if save: plt.savefig('dymax_grid.png',bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
     else: plt.close()
-    
+
 def plotLandmasses(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Landmasses Only, no Background'''
     lonlat_islands, dymax_islands = getIslands(resolution)
-    
+
     patches = []
     for island in dymax_islands:
         #if np.all(island==islands[4]): print (island)
-        
+
         try: polygon = Polygon(np.array(island),closed=True, fill=True)
         except: continue
         #plt.plot(island[:,0],island[:,1])
         patches.append(polygon)
-    
+
 
     plt.figure(figsize=(20,12),frameon=False)
     colors = 100*np.random.random(len(patches))
@@ -297,11 +289,11 @@ def plotLandmasses(verbose=True, save=False, show=True, dpi=300, resolution='c')
         plt.tight_layout()
         plt.show()
     else: plt.close()
-    
-def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale = 300, speedup = 1, save=False, show=True):
+
+def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300, speedup=1, save=False, show=True):
     '''
     Convert rectilinear image to dymax projection image.
-    
+
     scale is number of pixels per dymax xy unit.
     How to calculate output scale:
         width = 160 # in cm
@@ -309,10 +301,10 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale = 3
         scale = (width * resolution) / 5.5
         __OR__
         final_size_in_pixels = (scale * 5.5, scale * 2.6)
-    
-    speedup gives a sparse preview of the output image and is specified as a 
+
+    speedup gives a sparse preview of the output image and is specified as a
     time divisor. On an intel Q6600 14 million points take about 6 minutes.
-    A speedup value of 10 reduces compute time to 
+    A speedup value of 10 reduces compute time to
     '''
     start = time.time()
     im = Image.open(inFilename) #Can be many different formats. #15 vertical and horizontal pixels per degree
@@ -366,7 +358,7 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale = 3
 def runExamples(verbose=True, save=False, show=True, resolution='c'):
     '''
     Run all the examples in this file.
-    The first part of this is really fast, the image conversion stuff 
+    The first part of this is really fast, the image conversion stuff
     '''
     if verbose: print('>> Running Dymax Projection Examples')
     plotTriangles(save=save, show=show)
@@ -375,8 +367,8 @@ def runExamples(verbose=True, save=False, show=True, resolution='c'):
     plotEarthSubTriangles(save=save, show=show, resolution=resolution)
     plotGrid(save=save, show=show)
     plotLandmasses(save=save, show=show, resolution=resolution)
-    convertRectImage2DymaxImage(data_directory+'bmng.jpg','dymax_bmng.png', save=save, show=show)
-    convertRectImage2DymaxImage(data_directory+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
-    
+    convertRectImage2DymaxImage(PKG_DATA+'bmng.jpg','dymax_bmng.png', save=save, show=show)
+    convertRectImage2DymaxImage(PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
+
 if __name__ == '__main__':
     runExamples()

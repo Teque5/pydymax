@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
 '''
 Constants for Dymaxion Projection Module
 '''
@@ -53,7 +54,7 @@ for idx in range(facecount):
     verts = np.array([vertices[i] for i in vert_indices[idx]])
     vertmean = np.mean(verts,axis=0)
     XYZcenters[idx] = vertmean/magnitude(vertmean)
-                          
+
 # Translate                          [X,   Y,                 Rotation]
 dymax_translate = np.array([         [2.0, 7 / (2 * math.sqrt(3)), 240],
                                      [2.0, 5 / (2 * math.sqrt(3)), 300],
