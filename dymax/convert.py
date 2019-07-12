@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
-'''
-Primary Dymaxion Projection Conversion Subroutines
-'''
-import numpy as np
+'''Dymaxion Projection Conversion Subroutines'''
 import math
-from functools import wraps
+import numpy as np
+from functools import lru_cache
 
 from . import constants
 
@@ -13,24 +11,8 @@ from . import constants
 magnitude = lambda vector: np.sqrt(np.dot(vector,vector))
 distance = lambda vectorA, vectorB: np.linalg.norm(np.array(vectorA)-np.array(vectorB))
 
-def cached(function):
-    '''
-    Generic Caching Decorator
-    If a function is called twice with the same args it won't compute twice.
-    '''
-    cache = {}
-    @wraps(function)
-    def wrapper(*args, **kwargs):
-        if args in cache:
-            return cache[args]
-        else:
-            result = function(*args, **kwargs)
-            cache[args] = result
-            return result
-    return wrapper
-
 ### Dymax Conversion Main Routine
-@cached
+@lru_cache(maxsize=2**12)
 def lonlat2dymax(lng, lat, getlcd = False) :
     '''
     Lon Lat 2 Dymax XY
@@ -38,8 +20,9 @@ def lonlat2dymax(lng, lat, getlcd = False) :
     This is the primary reason this whole package exists.
     Last benchmarked at around 13000 points/sec on i7-8550U.
 
-    >>> lonlat2dymax(-77.0367, 38.8951)
-    (3.3032683375782588, 1.5338148735451902)
+    >>> vert = lonlat2dymax(-77.0367, 38.8951)
+    >>> 'x={:.8f}, y={:.8f}'.format(*vert)
+    'x=3.30326834, y=1.53381487'
     '''
     # Convert the given(long.,lat.) coordinate into spherical
     # polar coordinates(r, theta, phi) with radius=1.
@@ -67,8 +50,9 @@ def vert2dymax(vert, vertset) :
     We need to 'nudge' the point a little bit into the triangle
     Hence we do a weighted average with point i having a massive weight
 
-    >>> vert2dymax(3,constants.vert_indices[1])
-    (2.0000003322806266, 0.86617338071785721)
+    >>> vert = vert2dymax(3, constants.vert_indices[1])
+    >>> 'x={:.8f}, y={:.8f}'.format(*vert)
+    'x=2.00000033, y=0.86617338'
     '''
     XYZ = np.zeros(3)
     for i in range(3):
@@ -82,17 +66,19 @@ def vert2dymax(vert, vertset) :
     x, y = dymax_point(tri, hlcd, XYZ)
     return x, y
 
-def face2dymax(faceIdx, push = .9999, atomic=False):
+def face2dymax(faceIdx, push=.9999, atomic=False):
     '''
-    Convert Icosahedron Face to 4 XY Vertices
+    Convert Icosahedron Face to (4) XY Vertices
     push is % distance from vertex to center
     atomic will draw the LCD subtriangles
 
-    >>> face2dymax(1,push=.75)
-    array([[ 2.35304556,  1.64720662],
-           [ 1.64695413,  1.64720662],
-           [ 2.00000025,  1.03571383],
-           [ 2.35304556,  1.64720662]])
+    >>> verts = face2dymax(1, push=.75)
+    >>> for vdx, vert in enumerate(verts):
+    ...     print('v{} x={:.8f}, y={:.8f}'.format(vdx, vert[0], vert[1]))
+    v0 x=2.35304556, y=1.64720662
+    v1 x=1.64695413, y=1.64720662
+    v2 x=2.00000025, y=1.03571383
+    v3 x=2.35304556, y=1.64720662
     '''
     if atomic:
         points = np.zeros((6+1,2))
@@ -201,15 +187,14 @@ def dymax_point(tri, lcd, XYZ) :
     of the face and one of the face vertices. So set up which vertex
     to use.
 
-    >>> dymax_point(10,2,[-1.0, 0, 0])
-    (3.5024708119057464, 0.095355159804071277)
+    >>> vert = dymax_point(10, 2, [-1.0, 0, 0])
+    >>> 'x={:.8f}, y={:.8f}'.format(*vert)
+    'x=3.50247081, y=0.09535516'
     '''
     v1 = constants.vert_indices[tri][0]
 
     h0XYZ = XYZ
     h1XYZ = constants.vertices[v1]
-
-    #print(type(h0XYZ),type(h1XYZ),type(XYZ))
 
     theta, phi = cartesian2spherical(constants.XYZcenters[tri])
 
@@ -314,7 +299,7 @@ def rotate3d(axis, alpha, XYZ, reverse=True) :
 ### Determine (X,Y) Projection Coordinates for Dymaxion Triangle Centers
 dymax_centers = np.zeros((constants.facecount,2))
 for i in range(constants.facecount):
-    tri,hlcd = fullerTriangle(constants.XYZcenters[i])
+    tri, hlcd = fullerTriangle(constants.XYZcenters[i])
     dymax_centers[i] = dymax_point(tri,hlcd,constants.XYZcenters[i])
 
 if __name__ == '__main__':

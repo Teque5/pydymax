@@ -7,15 +7,15 @@ import numpy as np
 import os
 import pkg_resources
 import time
-from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from matplotlib.patches import Polygon
 from PIL import Image, ImageOps
 from sys import stdout
 
-PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
-
 from . import convert
 from . import constants
+
+PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
 
 def getIslands(verbose=True, resolution='c'):
     '''
