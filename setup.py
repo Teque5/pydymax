@@ -9,6 +9,7 @@ Where to go from here?
 * `python3 -m dymax.examples`
 * `python3 setup.py test`
 * `pytest --doctest-modules`
+* `pylint dymax`
 '''
 from setuptools import setup
 from dymax import __version__
