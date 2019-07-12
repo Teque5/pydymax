@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-'''
-Constants for Dymaxion Projection Module
-'''
-from __future__ import division, print_function # 3.x Compliant
-import numpy as np
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
+'''Constants for Dymaxion Projection Module'''
 import math
+import numpy as np
 
 ### Quick Vector Functions
-magnitude = lambda vector: np.sqrt(np.dot(vector,vector))
+magnitude = lambda vector: np.sqrt(np.dot(vector, vector))
 
 ### Icosahedron Time
 facecount, vertexcount = 20, 12
@@ -48,12 +46,12 @@ lon_lat_verts = np.array([[10.53620  ,  64.7     ],
                           [-169.4638 , -64.7     ]])
 
 ### Calculate Spherical Triangle Centers
-XYZcenters = np.zeros((facecount,3))
+XYZcenters = np.zeros((facecount, 3))
 for idx in range(facecount):
     verts = np.array([vertices[i] for i in vert_indices[idx]])
-    vertmean = np.mean(verts,axis=0)
+    vertmean = np.mean(verts, axis=0)
     XYZcenters[idx] = vertmean/magnitude(vertmean)
-                          
+
 # Translate                          [X,   Y,                 Rotation]
 dymax_translate = np.array([         [2.0, 7 / (2 * math.sqrt(3)), 240],
                                      [2.0, 5 / (2 * math.sqrt(3)), 300],
