@@ -13,7 +13,7 @@ Technically, to unfold the earth into an icosahedron, we must first consider sli
 
 ![LCD Triangles](docs/dymax_earthsubtriangles.png)
 
-All images in `/docs` and on this page are created by running `dymax.examples.runExamples()`.
+All images in `/docs` and on this page are created by running `python3 -m dymax.examples`.
 
 ## To-Do List
 1) Replace spherical coordinate conversion with Earth-Centered-Earth-Fixed for much better accuracy.
