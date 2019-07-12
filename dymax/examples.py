@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 '''Dymaxion Projection Examples'''
-import math
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 import pkg_resources
 import time
+from sys import stdout
+import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Polygon
 from PIL import Image, ImageOps
-from sys import stdout
 
 from . import convert
 from . import constants
@@ -68,8 +67,8 @@ def plotTriangles(verbose=True, save=False, show=True, dpi=300):
     plt.gca().set_xlim([0,5.5])
     plt.gca().set_ylim([0,2.6])
     plt.gca().set_aspect('equal')
-    if verbose: print(':: plotted',constants.facecount,'triangles')
-    if save: plt.savefig('dymax_triangles.png',bbox_inches='tight',dpi=300,transparent=True,pad_inches=0)
+    if verbose: print(':: plotted', constants.facecount, 'triangles')
+    if save: plt.savefig('dymax_triangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
@@ -109,10 +108,10 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
     ### Dymaxion Face Tiles
     for jdx in range(constants.facecount):
         if jdx == 8 or jdx == 15: continue
-        points = convert.face2dymax(jdx,push=.95)
-        xcenter,ycenter = convert.dymax_centers[jdx]
-        plt.text(xcenter,ycenter,str(jdx),size='x-large')
-        plt.plot(points[:,0],points[:,1],lw=5,alpha=.7)
+        points = convert.face2dymax(jdx, push=.95)
+        xcenter, ycenter = convert.dymax_centers[jdx]
+        plt.text(xcenter, ycenter, str(jdx), size='x-large')
+        plt.plot(points[:, 0], points[:,1], lw=5, alpha=.7)
 
     ### Draw Landmasses
     patches = []
@@ -124,11 +123,11 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
     colors = 100*np.random.random(len(patches))
     p.set_array(np.array(colors))
     plt.gca().add_collection(p)
-    if verbose: print(':: plotted',len(patches),'coastlines')
-    plt.gca().set_xlim([0,5.5])
-    plt.gca().set_ylim([0,2.6])
+    if verbose: print(':: plotted', len(patches), 'coastlines')
+    plt.gca().set_xlim([0, 5.5])
+    plt.gca().set_ylim([0, 2.6])
     plt.gca().set_aspect('equal')
-    if save: plt.savefig('dymax_earthmeridianstriangles.png',bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
+    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight',dpi=dpi,transparent=True,pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
@@ -136,7 +135,7 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
 
 def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     lonlat_islands, dymax_islands = getIslands(resolution)
-    plt.figure(figsize=(20,12))
+    plt.figure(figsize=(20, 12))
     plt.title('The dymax face polygons look super-fucked on a rectilinear projection')
     patches = []
     faces = []
@@ -145,10 +144,10 @@ def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resol
         patches.append(polygon)
 
     for face in range(constants.facecount):
-        derp = np.zeros((3,2))
+        derp = np.zeros((3, 2))
         for vtex in range(3):
             derp[vtex] = constants.lon_lat_verts[constants.vert_indices[face,vtex]]
-        polygon = Polygon(derp,closed=False,fill=True)
+        polygon = Polygon(derp, closed=False, fill=True)
         faces.append(polygon)
 
     colors = 100*np.random.random(len(patches))
@@ -175,7 +174,7 @@ def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resoluti
 
     xs, ys = [],[]
     lcds = []
-    for i in range(10000):
+    for _ in range(10000):
         lon = np.random.random()*360-180
         lat = np.random.random()*180-90
         x, y, lcd = convert.lonlat2dymax(lon,lat, getlcd=True)
@@ -231,8 +230,8 @@ def plotGrid(verbose=True, save=False, show=True, dpi=300):
     for zdx, vertset in enumerate(constants.vert_indices):
         if zdx==8 or zdx==15: continue # Edge Triangles
         x,y = [],[]
-        for i,vert in enumerate(vertset):
-            xt,yt = convert.vert2dymax(vert,vertset)
+        for _, vert in enumerate(vertset):
+            xt, yt = convert.vert2dymax(vert, vertset)
             #print(xt,yt)
             x += [xt]
             y += [yt]
@@ -266,7 +265,7 @@ def plotLandmasses(verbose=True, save=False, show=True, dpi=300, resolution='c')
     for island in dymax_islands:
         #if np.all(island==islands[4]): print (island)
 
-        try: polygon = Polygon(np.array(island),closed=True, fill=True)
+        try: polygon = Polygon(np.array(island), closed=True, fill=True)
         except: continue
         #plt.plot(island[:,0],island[:,1])
         patches.append(polygon)
@@ -318,9 +317,9 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300
 
     ### X and Y are indexed from topleft to bottom right
     if verbose: print(':: sweeping over Longitudes:')
-    xsize,ysize = im.size
+    xsize, ysize = im.size
     for i, lon in enumerate(np.linspace(-180,180,xsize/speedup,endpoint=True)):
-        i*= speedup
+        i *= speedup
         if i % 20 == 0:
             print('{:+07.2f} '.format(lon), end='')
             stdout.flush() # I would add flush=True to print, but thats only in python3.3+

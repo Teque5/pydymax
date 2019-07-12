@@ -2,18 +2,18 @@
 #-*- coding: utf-8 -*-
 '''Dymaxion Projection Conversion Subroutines'''
 import math
-import numpy as np
 from functools import lru_cache
+import numpy as np
 
 from . import constants
 
 ### Quick Vector Functions
-magnitude = lambda vector: np.sqrt(np.dot(vector,vector))
+magnitude = lambda vector: np.sqrt(np.dot(vector, vector))
 distance = lambda vectorA, vectorB: np.linalg.norm(np.array(vectorA)-np.array(vectorB))
 
 ### Dymax Conversion Main Routine
 @lru_cache(maxsize=2**12)
-def lonlat2dymax(lng, lat, getlcd = False) :
+def lonlat2dymax(lng, lat, getlcd=False):
     '''
     Lon Lat 2 Dymax XY
 
@@ -31,7 +31,7 @@ def lonlat2dymax(lng, lat, getlcd = False) :
 
     # convert the spherical polar coordinates into cartesian
     # (x, y, z) coordinates.
-    XYZ = spherical2cartesian(theta,phi)
+    XYZ = spherical2cartesian(theta, phi)
     XYZ = np.array(XYZ)
     # determine which of the 20 spherical icosahedron triangles
     # the given point is in and the LCD triangle.
@@ -40,11 +40,11 @@ def lonlat2dymax(lng, lat, getlcd = False) :
     # Determine the corresponding Fuller map plane(x, y) point
     x, y = dymax_point(tri, lcd, XYZ)
 
-    if getlcd: return x, y,  lcd
+    if getlcd: return x, y, lcd
     else:      return x, y
 
 ### Dymax Conversion Subroutines
-def vert2dymax(vert, vertset) :
+def vert2dymax(vert, vertset):
     '''
     Convert Vertex Index to XY Position
     We need to 'nudge' the point a little bit into the triangle
@@ -81,20 +81,20 @@ def face2dymax(faceIdx, push=.9999, atomic=False):
     v3 x=2.35304556, y=1.64720662
     '''
     if atomic:
-        points = np.zeros((6+1,2))
+        points = np.zeros((6+1, 2))
         for jdx in range(6):
-            if not jdx % 2: XYZ = constants.vertices[constants.vert_indices[faceIdx,jdx//2]] # Normal Vertex
+            if not jdx % 2: XYZ = constants.vertices[constants.vert_indices[faceIdx, jdx//2]] # Normal Vertex
             else:
-                up = constants.vertices[constants.vert_indices[faceIdx,(jdx//2+1)%3]]
-                down = constants.vertices[constants.vert_indices[faceIdx,(jdx//2+2)%3]]
-                XYZ = np.mean([up,down],axis=0)
+                up = constants.vertices[constants.vert_indices[faceIdx, (jdx//2+1)%3]]
+                down = constants.vertices[constants.vert_indices[faceIdx, (jdx//2+2)%3]]
+                XYZ = np.mean([up, down], axis=0)
             XYZ = XYZ * push + constants.XYZcenters[faceIdx] * (1-push)
             tri, hlcd = fullerTriangle(XYZ)
             points[jdx] = dymax_point(tri, hlcd, XYZ)
     else:
-        points = np.zeros((3+1,2))
+        points = np.zeros((3+1, 2))
         for jdx in range(3):
-            XYZ = constants.vertices[constants.vert_indices[faceIdx,jdx]] * push + constants.XYZcenters[faceIdx] * (1-push)
+            XYZ = constants.vertices[constants.vert_indices[faceIdx, jdx]] * push + constants.XYZcenters[faceIdx] * (1-push)
             tri, hlcd = fullerTriangle(XYZ)
             points[jdx] = dymax_point(tri, hlcd, XYZ)
 
@@ -102,7 +102,7 @@ def face2dymax(faceIdx, push=.9999, atomic=False):
     points[-1] = points[0] # Loop Back to Start
     return points
 
-def lonlat2spherical(lng, lat) :
+def lonlat2spherical(lng, lat):
     '''
     Convert(long., lat.) point into spherical polar coordinates
     with r=radius=1.  Angles are given in radians.
@@ -113,13 +113,12 @@ def lonlat2spherical(lng, lat) :
     '''
     h_theta = 90.0 - lat
     h_phi = lng
-    if(lng < 0.0) :h_phi = lng + 360.0
+    if lng < 0.0: h_phi = lng + 360.0
     theta = math.radians(h_theta)
     phi = math.radians(h_phi)
     return theta, phi
 
-
-def spherical2cartesian(theta, phi) :
+def spherical2cartesian(theta, phi):
     '''
     Covert spherical polar coordinates to cartesian coordinates.
     Input angles in radians, output as unit vector.
@@ -130,7 +129,7 @@ def spherical2cartesian(theta, phi) :
     x = math.sin(theta) * math.cos(phi)
     y = math.sin(theta) * math.sin(phi)
     z = math.cos(theta)
-    return [x,y,z]
+    return [x, y, z]
 
 def cartesian2spherical(XYZ):
     '''
@@ -142,10 +141,10 @@ def cartesian2spherical(XYZ):
     [-1.4160901241763815, 1.0180812136981134]
     '''
     phi = math.acos(XYZ[2])
-    theta = math.atan2(XYZ[1],XYZ[0])
-    return [theta,phi]
+    theta = math.atan2(XYZ[1], XYZ[0])
+    return [theta, phi]
 
-def fullerTriangle(XYZ) :
+def fullerTriangle(XYZ):
     '''
     Determine which major icosahedron triangle
     and minor lowest common dinominator triangle
@@ -167,10 +166,10 @@ def fullerTriangle(XYZ) :
             h_dist1 = h_dist2
 
     # Now the LCD triangle is determined.
-    v1,v2,v3 = constants.vert_indices[h_tri]
-    h_dist1 = distance(XYZ,constants.vertices[v1])
-    h_dist2 = distance(XYZ,constants.vertices[v2])
-    h_dist3 = distance(XYZ,constants.vertices[v3])
+    v1, v2, v3 = constants.vert_indices[h_tri]
+    h_dist1 = distance(XYZ, constants.vertices[v1])
+    h_dist2 = distance(XYZ, constants.vertices[v2])
+    h_dist3 = distance(XYZ, constants.vertices[v3])
 
     if   h_dist1 <= h_dist2 and h_dist2 <= h_dist3: h_lcd = 0
     elif h_dist1 <= h_dist3 and h_dist3 <= h_dist2: h_lcd = 5
@@ -180,7 +179,7 @@ def fullerTriangle(XYZ) :
     elif h_dist3 <= h_dist2 and h_dist2 <= h_dist1: h_lcd = 3
     return h_tri, h_lcd
 
-def dymax_point(tri, lcd, XYZ) :
+def dymax_point(tri, lcd, XYZ):
     '''
     In order to rotate the given point into the template spherical
     triangle, we need the spherical polar coordinates of the center
@@ -199,22 +198,22 @@ def dymax_point(tri, lcd, XYZ) :
     theta, phi = cartesian2spherical(constants.XYZcenters[tri])
 
     axis = 2
-    h0XYZ = rotate3d(axis,theta,h0XYZ)
-    h1XYZ = rotate3d(axis,theta,h1XYZ)
+    h0XYZ = rotate3d(axis, theta, h0XYZ)
+    h1XYZ = rotate3d(axis, theta, h1XYZ)
 
     axis = 1
-    h0XYZ = rotate3d(axis,phi,h0XYZ)
-    h1XYZ = rotate3d(axis,phi,h1XYZ)
+    h0XYZ = rotate3d(axis, phi, h0XYZ)
+    h1XYZ = rotate3d(axis, phi, h1XYZ)
 
     theta, phi = cartesian2spherical(h1XYZ)
     theta = theta - np.pi/2
 
     axis = 2
-    h0XYZ = rotate3d(axis,theta,h0XYZ)
+    h0XYZ = rotate3d(axis, theta, h0XYZ)
 
     ### exact transformation equations
-    gz = math.sqrt(1 - h0XYZ[0]**2 -h0XYZ[1]**2)
-    gs = math.sqrt(5 + 2 * math.sqrt(5)) / ( gz * math.sqrt(15) )
+    gz = math.sqrt(1 - h0XYZ[0]**2 - h0XYZ[1]**2)
+    gs = math.sqrt(5 + 2 * math.sqrt(5)) / (gz * math.sqrt(15))
 
     gxp = h0XYZ[0] * gs
     gyp = h0XYZ[1] * gs
@@ -223,9 +222,9 @@ def dymax_point(tri, lcd, XYZ) :
     ga1p = gxp - (gyp / math.sqrt(3)) +  (constants.gel / 3)
     ga2p = (constants.gel / 3) - gxp - (gyp / math.sqrt(3))
 
-    ga0 = constants.gt + math.atan2( ga0p - 0.5 * constants.gel, constants.gdve)
-    ga1 = constants.gt + math.atan2( ga1p - 0.5 * constants.gel, constants.gdve)
-    ga2 = constants.gt + math.atan2( ga2p - 0.5 * constants.gel, constants.gdve)
+    ga0 = constants.gt + math.atan2(ga0p - 0.5 * constants.gel, constants.gdve)
+    ga1 = constants.gt + math.atan2(ga1p - 0.5 * constants.gel, constants.gdve)
+    ga2 = constants.gt + math.atan2(ga2p - 0.5 * constants.gel, constants.gdve)
 
     gx = 0.5 * (ga1 - ga2)
     gy = (2 * ga0 - ga1 - ga2) / (2 * math.sqrt(3))
@@ -237,18 +236,18 @@ def dymax_point(tri, lcd, XYZ) :
     ### Move and Rotate as Appropriate
     # You can disable the special translations for uniform triangles
     if   tri == 8  and lcd < 4:
-        xtranslate,ytranslate,rotation = constants.dymax_translate08_special
+        xtranslate, ytranslate, rotation = constants.dymax_translate08_special
     elif tri == 15 and lcd < 3:
-        xtranslate,ytranslate,rotation = constants.dymax_translate15_special
+        xtranslate, ytranslate, rotation = constants.dymax_translate15_special
     else:
-        xtranslate,ytranslate,rotation = constants.dymax_translate[tri]
+        xtranslate, ytranslate, rotation = constants.dymax_translate[tri]
 
     pointx, pointy = rotate2d(rotation, pointx, pointy)
     pointx += xtranslate
     pointy += ytranslate
     return pointx, pointy
 
-def rotate2d(angle, pointx, pointy) :
+def rotate2d(angle, pointx, pointy):
     '''
     Rotate a point orientation in XY-plane around Z
     This function obeys the right hand rule.
@@ -265,7 +264,7 @@ def rotate2d(angle, pointx, pointy) :
 
     return pointx, pointy
 
-def rotate3d(axis, alpha, XYZ, reverse=True) :
+def rotate3d(axis, alpha, XYZ, reverse=True):
     '''
     Rotate a 3-D point about the specified axis by alpha radians
     For some horrible reason, we are doing left hand rotation.
@@ -297,11 +296,7 @@ def rotate3d(axis, alpha, XYZ, reverse=True) :
     return XYZ
 
 ### Determine (X,Y) Projection Coordinates for Dymaxion Triangle Centers
-dymax_centers = np.zeros((constants.facecount,2))
+dymax_centers = np.zeros((constants.facecount, 2))
 for i in range(constants.facecount):
     tri, hlcd = fullerTriangle(constants.XYZcenters[i])
-    dymax_centers[i] = dymax_point(tri,hlcd,constants.XYZcenters[i])
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+    dymax_centers[i] = dymax_point(tri, hlcd, constants.XYZcenters[i])
