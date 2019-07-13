@@ -1,4 +1,4 @@
-# Dymaxion Projection Python Module
+# Dymaxion Projections
 This is a simple geodetic conversion tool for conversion from Lat/Lon to Dymaxion Fuller Map Projection Coordinates.
 
 ![Rectilinear Blue Marble](data-rect/bmng.jpg)
