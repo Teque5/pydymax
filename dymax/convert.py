@@ -10,24 +10,14 @@ from . import constants
 
 ### Quick Vector Functions
 magnitude = lambda x: math.sqrt(sum(i**2 for i in x))
-# distance = lambda vectorA, vectorB: np.linalg.norm(np.array(vectorA)-np.array(vectorB))
-
-def distance2(vec_a, vec_b): # 2000ns
-    return math.sqrt(sum((val_a - val_b)**2 for val_a, val_b in zip(vec_a, vec_b)))
 
 @numba.njit(fastmath=True)
-def distance(vec_a, vec_b): # 272ns
+def euclidean(vec_a, vec_b):
+    '''N-Dimensional L2 Norm; runs in 270ns'''
     acc = 0
     for idx in range(len(vec_a)):
         acc += (vec_a[idx] - vec_b[idx])**2
-    return np.sqrt(acc)
-
-@numba.njit
-def distance(vec_a, vec_b): # 488ns
-    return np.linalg.norm(vec_a - vec_b)
-
-def distance3(vec_a, vec_b): # 2770ns
-    return np.linalg.norm(vec_a - vec_b)
+    return math.sqrt(acc)
 
 ### Dymax Conversion Main Routine
 @lru_cache(maxsize=2**12)
@@ -186,9 +176,9 @@ def fullerTriangle(XYZ):
 
     # Now the LCD triangle is determined.
     v1, v2, v3 = constants.vert_indices[h_tri]
-    h_dist1 = distance(XYZ, constants.vertices[v1])
-    h_dist2 = distance(XYZ, constants.vertices[v2])
-    h_dist3 = distance(XYZ, constants.vertices[v3])
+    h_dist1 = euclidean(XYZ, constants.vertices[v1])
+    h_dist2 = euclidean(XYZ, constants.vertices[v2])
+    h_dist3 = euclidean(XYZ, constants.vertices[v3])
 
     if   h_dist1 <= h_dist2 <= h_dist3: h_lcd = 0
     elif h_dist1 <= h_dist3 <= h_dist2: h_lcd = 5
