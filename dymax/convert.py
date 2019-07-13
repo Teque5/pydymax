@@ -47,7 +47,7 @@ def lonlat2dymax(lon, lat, getlcd=False):
     XYZ = spherical2cartesian(theta, phi)
     # determine which of the 20 spherical icosahedron triangles
     # the given point is in and the LCD triangle.
-    tri, lcd = fullerTriangle(XYZ)
+    tri, lcd = fuller_triangle(XYZ)
 
     # Determine the corresponding Fuller map plane(x, y) point
     x, y = dymax_point(tri, lcd, XYZ)
@@ -74,7 +74,7 @@ def vert2dymax(vert, vertset):
             XYZ += constants.vertices[vertset[i]] * .0001
 
     ### Determine the corresponding Fuller map plane(x, y) point
-    tri, hlcd = fullerTriangle(XYZ)
+    tri, hlcd = fuller_triangle(XYZ)
     x, y = dymax_point(tri, hlcd, XYZ)
     return x, y
 
@@ -101,13 +101,13 @@ def face2dymax(faceIdx, push=.9999, atomic=False):
                 down = constants.vertices[constants.vert_indices[faceIdx, (jdx//2+2)%3]]
                 XYZ = np.mean([up, down], axis=0)
             XYZ = XYZ * push + constants.XYZcenters[faceIdx] * (1-push)
-            tri, hlcd = fullerTriangle(XYZ)
+            tri, hlcd = fuller_triangle(XYZ)
             points[jdx] = dymax_point(tri, hlcd, XYZ)
     else:
         points = np.zeros((3+1, 2))
         for jdx in range(3):
             XYZ = constants.vertices[constants.vert_indices[faceIdx, jdx]] * push + constants.XYZcenters[faceIdx] * (1-push)
-            tri, hlcd = fullerTriangle(XYZ)
+            tri, hlcd = fuller_triangle(XYZ)
             points[jdx] = dymax_point(tri, hlcd, XYZ)
 
 
@@ -139,7 +139,7 @@ def spherical2cartesian(theta, phi):
     Note that numba doesn't speed this one up.
 
     >>> spherical2cartesian(math.pi/2, math.pi)
-    [-1.0, 1.2246467991473532e-16, 6.123233995736766e-17]
+    (-1.0, 1.2246467991473532e-16, 6.123233995736766e-17)
     '''
     x = math.sin(theta) * math.cos(phi)
     y = math.sin(theta) * math.sin(phi)
@@ -153,19 +153,19 @@ def cartesian2spherical(XYZ):
     (theta, phi) ~ (lon, lat)
 
     >>> cartesian2spherical([0.131, -0.84, 0.525])
-    [-1.4160901241763815, 1.0180812136981134]
+    (-1.4160901241763815, 1.0180812136981134)
     '''
     phi = math.acos(XYZ[2])
     theta = math.atan2(XYZ[1], XYZ[0])
     return theta, phi
 
-def fullerTriangle(XYZ):
+def fuller_triangle(XYZ):
     '''
     Determine which major icosahedron triangle
     and minor lowest common dinominator triangle
     the XYZ point is in. (6 LCDs per Triangle)
 
-    >>> fullerTriangle([-1, 0, 0])
+    >>> fuller_triangle([-1, 0, 0])
     (10, 2)
     '''
     h_tri = -1
@@ -286,32 +286,32 @@ def rotate3d(axis, alpha, XYZ, reverse=True):
     reverse == left hand rotation, set to False for normal
 
     >>> rotate3d(0, np.pi/4, [.3, .5, .4])
-    [0.3, 0.6363961030678928, -0.07071067811865467]
+    (0.3, 0.6363961030678928, -0.07071067811865467)
     '''
     if reverse: alpha = -alpha
 
     if axis == 0:
         # Rotate around X
-        XYZ = [XYZ[0],
+        XYZ = (XYZ[0],
                XYZ[1] * math.cos(alpha) - XYZ[2] * math.sin(alpha),
-               XYZ[1] * math.sin(alpha) + XYZ[2] * math.cos(alpha)]
+               XYZ[1] * math.sin(alpha) + XYZ[2] * math.cos(alpha))
 
     elif axis == 1:
         # Rotate around Y
-        XYZ = [XYZ[0] * math.cos(alpha) + XYZ[2] * math.sin(alpha),
+        XYZ = (XYZ[0] * math.cos(alpha) + XYZ[2] * math.sin(alpha),
                XYZ[1],
-               -XYZ[0] * math.sin(alpha) + XYZ[2] * math.cos(alpha)]
+               -XYZ[0] * math.sin(alpha) + XYZ[2] * math.cos(alpha))
 
     elif axis == 2:
         # Rotate around Z
-        XYZ = [XYZ[0] * math.cos(alpha) - XYZ[1] * math.sin(alpha),
+        XYZ = (XYZ[0] * math.cos(alpha) - XYZ[1] * math.sin(alpha),
                XYZ[0] * math.sin(alpha) + XYZ[1] * math.cos(alpha),
-               XYZ[2]]
+               XYZ[2])
 
     return XYZ
 
 ### Determine (X,Y) Projection Coordinates for Dymaxion Triangle Centers
 dymax_centers = np.zeros((constants.facecount, 2))
-for i in range(constants.facecount):
-    tri, hlcd = fullerTriangle(constants.XYZcenters[i])
-    dymax_centers[i] = dymax_point(tri, hlcd, constants.XYZcenters[i])
+for fdx in range(constants.facecount):
+    tri, hlcd = fuller_triangle(constants.XYZcenters[fdx])
+    dymax_centers[fdx] = dymax_point(tri, hlcd, constants.XYZcenters[fdx])
