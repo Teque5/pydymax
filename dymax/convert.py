@@ -8,8 +8,13 @@ import numpy as np
 
 from . import constants
 
-### Quick Vector Functions
-magnitude = lambda x: math.sqrt(sum(i**2 for i in x))
+@numba.njit(fastmath=True)
+def magnitude(vec):
+    '''N-Dimentional Vector Magnitude'''
+    acc = 0
+    for val in vec:
+        acc += val**2
+    return math.sqrt(acc)
 
 @numba.njit(fastmath=True)
 def euclidean(vec_a, vec_b):
@@ -126,11 +131,12 @@ def lonlat2spherical(lon, lat):
     phi = math.radians(h_phi)
     return theta, phi
 
-@numba.njit(fastmath=True)
 def spherical2cartesian(theta, phi):
     '''
     Covert spherical polar coordinates to cartesian coordinates.
     Input angles in radians, output as unit vector.
+
+    Note that numba doesn't speed this one up.
 
     >>> spherical2cartesian(math.pi/2, math.pi)
     [-1.0, 1.2246467991473532e-16, 6.123233995736766e-17]
