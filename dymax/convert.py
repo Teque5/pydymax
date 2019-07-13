@@ -45,7 +45,6 @@ def lonlat2dymax(lon, lat, getlcd=False):
     # convert the spherical polar coordinates into cartesian
     # (x, y, z) coordinates.
     XYZ = spherical2cartesian(theta, phi)
-    XYZ = np.array(XYZ)
     # determine which of the 20 spherical icosahedron triangles
     # the given point is in and the LCD triangle.
     tri, lcd = fullerTriangle(XYZ)
@@ -121,8 +120,9 @@ def lonlat2spherical(lon, lat):
     with r=radius=1.  Angles are given in radians.
     note: Not on WGS84 Ellipsoid
 
-    >>> lonlat2spherical(179,89)
-    (0.017453292519943295, 3.12413936106985)
+    >>> theta, phi = lonlat2spherical(179, 89)
+    >>> 'theta={:.6f}, phi={:.6f}'.format(theta, phi)
+    'theta=0.017453, phi=3.124139'
     '''
     h_theta = 90.0 - lat
     h_phi = lon
@@ -144,7 +144,7 @@ def spherical2cartesian(theta, phi):
     x = math.sin(theta) * math.cos(phi)
     y = math.sin(theta) * math.sin(phi)
     z = math.cos(theta)
-    return [x, y, z]
+    return x, y, z
 
 def cartesian2spherical(XYZ):
     '''
@@ -157,7 +157,7 @@ def cartesian2spherical(XYZ):
     '''
     phi = math.acos(XYZ[2])
     theta = math.atan2(XYZ[1], XYZ[0])
-    return [theta, phi]
+    return theta, phi
 
 def fullerTriangle(XYZ):
     '''

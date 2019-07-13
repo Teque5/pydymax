@@ -309,8 +309,7 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300
         final_size_in_pixels = (scale * 5.5, scale * 2.6)
 
     speedup gives a sparse preview of the output image and is specified as a
-    time divisor. On an intel Q6600 14 million points take about 6 minutes.
-    A speedup value of 10 reduces compute time to
+    time divisor.
     '''
     start = time.time()
     im = Image.open(inFilename) #Can be many different formats. #15 vertical and horizontal pixels per degree
