@@ -338,16 +338,7 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300
             # Sometimes a point won't map to an edge properly
             except IndexError: print('{{{:d}, {:d}}}'.format(newx, newy), end='')
     if verbose: print()
-    dymaximg = ImageOps.flip(dymaximg) #it's upside down, who cares why
-
-    ### Convert white pixels to transparent (there must be a better way)
-    # print('converting')
-    # dymaximg.convert('RGBA')
-    # pixdata = dymaximg.load()
-    # for y in range(dymaximg.size[1]):
-    #     for x in range(dymaximg.size[0]):
-    #         if pixdata[x, y] == (255, 255, 255, 255):
-    #             pixdata[x, y] = (255, 255, 255, 0)
+    dymaximg = ImageOps.flip(dymaximg) #it's upside down since putpixel flips too
 
     numpoints = im.size[0] * im.size[1] // speedup
     if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(numpoints, numpoints/(time.time()-start), time.time()-start))
