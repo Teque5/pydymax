@@ -367,6 +367,7 @@ def benchmark(verbose=True):
 
     on i7-8550U, points/sec
     v1.0.0: 13600
+    v1.0.1: 28000
     '''
     lon_res = 1000
     lat_res = 100
