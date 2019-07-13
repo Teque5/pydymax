@@ -18,7 +18,7 @@ def magnitude(vec):
 
 @numba.njit(fastmath=True)
 def euclidean(vec_a, vec_b):
-    '''N-Dimensional L2 Norm; runs in 270ns'''
+    '''N-Dimensional Vector L2 Norm; runs in 270ns'''
     acc = 0
     for idx in range(len(vec_a)):
         acc += (vec_a[idx] - vec_b[idx])**2
@@ -33,6 +33,27 @@ def lonlat2dymax(lon, lat, getlcd=False):
     This is the primary reason this whole package exists.
     Last benchmarked at around 13000 points/sec on i7-8550U.
 
+    Parameters
+    ----------
+    lon : float
+        Longitude in radians.
+    lat : float
+        Latitude in radians.
+    getlcd : bool, optional(default False)
+        Set to return the LCD triangle index. You get it for free when computing
+        position in triangle.
+
+    Returns
+    -------
+    x_pos : float
+        X position in dymaxion coordinates.
+    y_pos : float
+        Y position in dymaxion coordinates.
+    lcd : int, optional
+        Lowest-Common-Denominator sub-triangle index.
+
+    Example
+    -------
     >>> vert = lonlat2dymax(-77.0367, 38.8951)
     >>> 'x={:.8f}, y={:.8f}'.format(*vert)
     'x=3.30326834, y=1.53381487'
@@ -50,40 +71,58 @@ def lonlat2dymax(lon, lat, getlcd=False):
     tri, lcd = fuller_triangle(XYZ)
 
     # Determine the corresponding Fuller map plane(x, y) point
-    x, y = dymax_point(tri, lcd, XYZ)
+    x_pos, y_pos = dymax_point(tri, lcd, XYZ)
 
-    if getlcd: return x, y, lcd
-    else:      return x, y
+    if getlcd: return x_pos, y_pos, lcd
+    else:      return x_pos, y_pos
 
 ### Dymax Conversion Subroutines
-def vert2dymax(vert, vertset):
+def vert2dymax(vert, vertset, push=.9999):
     '''
-    Convert Vertex Index to XY Position
-    We need to 'nudge' the point a little bit into the triangle
-    Hence we do a weighted average with point i having a massive weight
+    Convert Vertex Index to XY Position We need to 'nudge' the point a little
+    bit into the triangle. Without the nudge, the vertices would be exactly
+    between dymaxion faces and wouldn't make sense for plotting. Hence we do a
+    weighted average with point idx having a massive weight
 
+    Example
+    -------
     >>> vert = vert2dymax(3, constants.vert_indices[1])
     >>> 'x={:.8f}, y={:.8f}'.format(*vert)
     'x=2.00000033, y=0.86617338'
     '''
     XYZ = np.zeros(3)
-    for i in range(3):
-        if vertset[i] == vert:
-            XYZ += constants.vertices[vert] * .9999
+    for idx in range(3):
+        if vertset[idx] == vert:
+            XYZ += constants.vertices[vert] * push
         else:
-            XYZ += constants.vertices[vertset[i]] * .0001
+            XYZ += constants.vertices[vertset[idx]] * (1-push)
 
     ### Determine the corresponding Fuller map plane(x, y) point
     tri, hlcd = fuller_triangle(XYZ)
-    x, y = dymax_point(tri, hlcd, XYZ)
-    return x, y
+    x_pos, y_pos = dymax_point(tri, hlcd, XYZ)
+    return x_pos, y_pos
 
-def face2dymax(faceIdx, push=.9999, atomic=False):
+def face2dymax(face_idx, push=.9999, atomic=False):
     '''
     Convert Icosahedron Face to (4) XY Vertices
-    push is % distance from vertex to center
+
+    Parameters
+    ----------
+    face_idx : int
+        Dymaxion face index.
+    push : float
+        Multiplier distance from vertex to center. Has the effect of compressing
+        the face toward the center for easy plotting usage.
     atomic will draw the LCD subtriangles
 
+    Returns
+    -------
+    points : ndarray of float
+        Vertices correspointing to the face index requested. Normally this is
+        4 vertics, but if atomic will return 7 vertices.
+
+    Example
+    -------
     >>> verts = face2dymax(1, push=.75)
     >>> for vdx, vert in enumerate(verts):
     ...     print('v{} x={:.8f}, y={:.8f}'.format(vdx, vert[0], vert[1]))
@@ -95,38 +134,37 @@ def face2dymax(faceIdx, push=.9999, atomic=False):
     if atomic:
         points = np.zeros((6+1, 2))
         for jdx in range(6):
-            if not jdx % 2: XYZ = constants.vertices[constants.vert_indices[faceIdx, jdx//2]] # Normal Vertex
+            if not jdx % 2: XYZ = constants.vertices[constants.vert_indices[face_idx, jdx//2]] # Normal Vertex
             else:
-                up = constants.vertices[constants.vert_indices[faceIdx, (jdx//2+1)%3]]
-                down = constants.vertices[constants.vert_indices[faceIdx, (jdx//2+2)%3]]
+                up = constants.vertices[constants.vert_indices[face_idx, (jdx//2+1)%3]]
+                down = constants.vertices[constants.vert_indices[face_idx, (jdx//2+2)%3]]
                 XYZ = np.mean([up, down], axis=0)
-            XYZ = XYZ * push + constants.XYZcenters[faceIdx] * (1-push)
+            XYZ = XYZ * push + constants.XYZcenters[face_idx] * (1-push)
             tri, hlcd = fuller_triangle(XYZ)
             points[jdx] = dymax_point(tri, hlcd, XYZ)
     else:
         points = np.zeros((3+1, 2))
         for jdx in range(3):
-            XYZ = constants.vertices[constants.vert_indices[faceIdx, jdx]] * push + constants.XYZcenters[faceIdx] * (1-push)
+            XYZ = constants.vertices[constants.vert_indices[face_idx, jdx]] * push + constants.XYZcenters[face_idx] * (1-push)
             tri, hlcd = fuller_triangle(XYZ)
             points[jdx] = dymax_point(tri, hlcd, XYZ)
-
 
     points[-1] = points[0] # Loop Back to Start
     return points
 
 def lonlat2spherical(lon, lat):
     '''
-    Convert(long., lat.) point into spherical polar coordinates
-    with r=radius=1.  Angles are given in radians.
+    Convert (lon, lat) point into spherical polar coordinates with radius=1.
+    Angles are given in radians.
     note: Not on WGS84 Ellipsoid
 
     >>> theta, phi = lonlat2spherical(179, 89)
     >>> 'theta={:.6f}, phi={:.6f}'.format(theta, phi)
     'theta=0.017453, phi=3.124139'
     '''
-    h_theta = 90.0 - lat
+    h_theta = 90 - lat
     h_phi = lon
-    if lon < 0.0: h_phi = lon + 360.0
+    if lon < 0: h_phi = lon + 360
     theta = math.radians(h_theta)
     phi = math.radians(h_phi)
     return theta, phi
@@ -165,6 +203,20 @@ def fuller_triangle(XYZ):
     and minor lowest common dinominator triangle
     the XYZ point is in. (6 LCDs per Triangle)
 
+    Parameters
+    ----------
+    xyz : tuple of floats
+        Cartesian coordinate position.
+
+    Returns
+    -------
+    h_tri : int
+        Dymaxion triangle index.
+    h_lcd : int
+        Dymaxion lowest-common-denominator triangle index.
+
+    Example
+    -------
     >>> fuller_triangle([-1, 0, 0])
     (10, 2)
     '''
@@ -201,6 +253,24 @@ def dymax_point(tri, lcd, XYZ):
     of the face and one of the face vertices. So set up which vertex
     to use.
 
+    Parameters
+    ----------
+    tri : int
+        Dymaxion face index where we want to be.
+    lcd : int
+        Dymaxion sub-triangle where we want to be.
+    XYZ : tuple of floats
+        Pseudo-ECEF coordinate that will be projected to dymaxion.
+
+    Returns
+    -------
+    pointx : float
+        X position for dymaxion projection.
+    pointy : float
+        Y position for dymaxion projection.
+
+    Example
+    -------
     >>> vert = dymax_point(10, 2, [-1.0, 0, 0])
     >>> 'x={:.8f}, y={:.8f}'.format(*vert)
     'x=3.50247081, y=0.09535516'
