@@ -48,7 +48,7 @@ lon_lat_verts = np.array([[10.53620  ,  64.7     ],
 ### Calculate Spherical Triangle Centers
 XYZcenters = np.zeros((facecount, 3))
 for idx in range(facecount):
-    verts = np.array([vertices[i] for i in vert_indices[idx]])
+    verts = np.array([vertices[jdx] for jdx in vert_indices[idx]])
     vertmean = np.mean(verts, axis=0)
     XYZcenters[idx] = vertmean/magnitude(vertmean)
 
@@ -77,7 +77,7 @@ dymax_translate08_special = np.array([1.5, 1 / math.sqrt(3),       300]) # if LC
 dymax_translate15_special = np.array([0.5, 1 / math.sqrt(3),        60]) # if LCD < 3
 
 ### Optimizations
-garc = 2.0 * math.asin( math.sqrt( (5 - math.sqrt(5)) / 10 ))
-gt = garc / 2.0
-gdve = math.sqrt( (3 + math.sqrt(5))  / (5 + math.sqrt(5)) )
-gel = math.sqrt( 8 / (5 + math.sqrt(5)) )
+garc = 2 * math.asin(math.sqrt( (5 - math.sqrt(5)) / 10))
+gt = garc / 2
+gdve = math.sqrt((3 + math.sqrt(5)) / (5 + math.sqrt(5)))
+gel = math.sqrt(8 / (5 + math.sqrt(5)))

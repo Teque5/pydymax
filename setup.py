@@ -24,6 +24,6 @@ setup(
     description='Dymaxion Fuller Projection Utilities',
     long_description=__doc__,
     license='Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)',
-    install_requires=['numpy','matplotlib','Pillow'],
+    install_requires=['numpy', 'matplotlib', 'Pillow', 'numba'],
     package_data={'dymax': ['data/*.dat', 'data/*.jpg']}
     )
