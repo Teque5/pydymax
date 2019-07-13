@@ -285,7 +285,7 @@ def rotate3d(axis, alpha, XYZ, reverse=True):
     For some horrible reason, we are doing left hand rotation.
     reverse == left hand rotation, set to False for normal
 
-    >>> rotate3d(0,np.pi/4,[.3, .5, .4])
+    >>> rotate3d(0, np.pi/4, [.3, .5, .4])
     [0.3, 0.6363961030678928, -0.07071067811865467]
     '''
     if reverse: alpha = -alpha
