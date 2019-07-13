@@ -48,7 +48,7 @@ lon_lat_verts = np.array([[10.53620  ,  64.7     ],
 ### Calculate Spherical Triangle Centers
 XYZcenters = np.zeros((facecount, 3))
 for idx in range(facecount):
-    verts = np.array([vertices[i] for i in vert_indices[idx]])
+    verts = np.array([vertices[jdx] for jdx in vert_indices[idx]])
     vertmean = np.mean(verts, axis=0)
     XYZcenters[idx] = vertmean/magnitude(vertmean)
 
