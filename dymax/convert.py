@@ -3,13 +3,31 @@
 '''Dymaxion Projection Conversion Subroutines'''
 import math
 from functools import lru_cache
+import numba
 import numpy as np
 
 from . import constants
 
 ### Quick Vector Functions
-magnitude = lambda vector: np.sqrt(np.dot(vector, vector))
-distance = lambda vectorA, vectorB: np.linalg.norm(np.array(vectorA)-np.array(vectorB))
+magnitude = lambda x: math.sqrt(sum(i**2 for i in x))
+# distance = lambda vectorA, vectorB: np.linalg.norm(np.array(vectorA)-np.array(vectorB))
+
+def distance2(vec_a, vec_b): # 2000ns
+    return math.sqrt(sum((val_a - val_b)**2 for val_a, val_b in zip(vec_a, vec_b)))
+
+@numba.njit(fastmath=True)
+def distance(vec_a, vec_b): # 272ns
+    acc = 0
+    for idx in range(len(vec_a)):
+        acc += (vec_a[idx] - vec_b[idx])**2
+    return np.sqrt(acc)
+
+@numba.njit
+def distance(vec_a, vec_b): # 488ns
+    return np.linalg.norm(vec_a - vec_b)
+
+def distance3(vec_a, vec_b): # 2770ns
+    return np.linalg.norm(vec_a - vec_b)
 
 ### Dymax Conversion Main Routine
 @lru_cache(maxsize=2**12)
@@ -118,12 +136,13 @@ def lonlat2spherical(lon, lat):
     phi = math.radians(h_phi)
     return theta, phi
 
+@numba.njit(fastmath=True)
 def spherical2cartesian(theta, phi):
     '''
     Covert spherical polar coordinates to cartesian coordinates.
     Input angles in radians, output as unit vector.
 
-    >>> spherical2cartesian(math.pi/2,math.pi)
+    >>> spherical2cartesian(math.pi/2, math.pi)
     [-1.0, 1.2246467991473532e-16, 6.123233995736766e-17]
     '''
     x = math.sin(theta) * math.cos(phi)
@@ -171,12 +190,12 @@ def fullerTriangle(XYZ):
     h_dist2 = distance(XYZ, constants.vertices[v2])
     h_dist3 = distance(XYZ, constants.vertices[v3])
 
-    if   h_dist1 <= h_dist2 and h_dist2 <= h_dist3: h_lcd = 0
-    elif h_dist1 <= h_dist3 and h_dist3 <= h_dist2: h_lcd = 5
-    elif h_dist2 <= h_dist1 and h_dist1 <= h_dist3: h_lcd = 1
-    elif h_dist2 <= h_dist3 and h_dist3 <= h_dist1: h_lcd = 2
-    elif h_dist3 <= h_dist1 and h_dist1 <= h_dist2: h_lcd = 4
-    elif h_dist3 <= h_dist2 and h_dist2 <= h_dist1: h_lcd = 3
+    if   h_dist1 <= h_dist2 <= h_dist3: h_lcd = 0
+    elif h_dist1 <= h_dist3 <= h_dist2: h_lcd = 5
+    elif h_dist2 <= h_dist1 <= h_dist3: h_lcd = 1
+    elif h_dist2 <= h_dist3 <= h_dist1: h_lcd = 2
+    elif h_dist3 <= h_dist1 <= h_dist2: h_lcd = 4
+    elif h_dist3 <= h_dist2 <= h_dist1: h_lcd = 3
     return h_tri, h_lcd
 
 def dymax_point(tri, lcd, XYZ):
