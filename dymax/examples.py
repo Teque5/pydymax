@@ -16,13 +16,26 @@ from . import constants
 
 PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
 
-def getIslands(verbose=True, resolution='c'):
+def get_islands(resolution='c', verbose=True):
     '''
-    Get coastlines from GSHHS:
+    Get coastlines from NOAA's GSHHS
     Global Self-consistent Hierarchical High-resolution Shorelines
-    Returns outlines in (Lon,Lat) Geodesic and (X,Y) Dymax format.
 
-    Valid resolutions:  c (crude), l (low), i (intermediate), h (high), f (full)
+    Parameters
+    ----------
+    resolution : string
+        Resolutions are valid in the following set:
+        c (crude), l (low), i (intermediate), h (high), f (full)
+    verbose : bool
+
+    Returns
+    -------
+    lonlat_islands : list of 2-D ndarrays
+        Each island in list contains an array of N points. Each point is a
+        (lon, lat) pair of WGS84 coordinates.
+    dymax_islands : ndarray
+        Each island in list contains an array of N points. Each point is a
+        (x_pos, y_pos) pair of dymax coordinates.
     '''
     ### Load Coastlines
     binfile = open(PKG_DATA+'gshhs_'+resolution+'.dat', 'rb')
@@ -76,7 +89,7 @@ def plot_triangles(verbose=True, save=False, show=True, dpi=300):
 
 def plot_triangles_meridians(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Dymax Triangles, All countries, and Meridians'''
-    lonlat_islands, dymax_islands = getIslands(resolution)
+    lonlat_islands, dymax_islands = get_islands(resolution)
     n = 1000
     plt.figure(figsize=(20, 12))
     plt.title('Dymaxion Map Projection')
@@ -136,7 +149,7 @@ def plot_triangles_meridians(verbose=True, save=False, show=True, dpi=300, resol
     else: plt.close()
 
 def plot_triangles_rectilinear(verbose=True, save=False, show=True, dpi=300, resolution='c'):
-    lonlat_islands, dymax_islands = getIslands(resolution)
+    lonlat_islands, dymax_islands = get_islands(resolution)
     plt.figure(figsize=(20, 12))
     plt.title('The dymax face polygons look super-fucked on a rectilinear projection')
     patches = []
@@ -170,7 +183,7 @@ def plot_triangles_rectilinear(verbose=True, save=False, show=True, dpi=300, res
 
 def plot_lcd_triangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Each Icosahedron Face has six sub-triangles that are splitting on.'''
-    lonlat_islands, dymax_islands = getIslands(resolution)
+    lonlat_islands, dymax_islands = get_islands(resolution)
 
     plt.figure(figsize=(20, 12))
 
@@ -264,19 +277,12 @@ def plot_grid(verbose=True, save=False, show=True, dpi=300):
 
 def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Landmasses Only, no Background'''
-    lonlat_islands, dymax_islands = getIslands(resolution)
+    lonlat_islands, dymax_islands = get_islands(resolution)
 
     patches = []
     for island in dymax_islands:
-        #if np.all(island==islands[4]): print (island)
-
-        try: polygon = Polygon(np.array(island), closed=True, fill=True)
-        except:
-            # TODO: FIX THIS SO ITS A SPECIFIC EXCEPTION
-            continue
-        #plt.plot(island[:,0],island[:,1])
+        polygon = Polygon(np.array(island), closed=True, fill=True)
         patches.append(polygon)
-
 
     plt.figure(figsize=(20, 12), frameon=False)
     colors = 100 * np.random.random(len(patches))
