@@ -68,7 +68,7 @@ def get_islands(resolution='c', verbose=True):
     if verbose: print(':: computed', len(places), 'coastlines')
     return lonlat_islands, dymax_islands
 
-def plot_triangles(verbose=True, save=False, show=True, dpi=300):
+def plot_triangles(save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Spherical Triangles'''
     plt.figure(figsize=(20, 12))
     for jdx in range(constants.facecount):
@@ -87,7 +87,7 @@ def plot_triangles(verbose=True, save=False, show=True, dpi=300):
         plt.show()
     else: plt.close()
 
-def plot_triangles_meridians(verbose=True, save=False, show=True, dpi=300, resolution='c'):
+def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Triangles, All countries, and Meridians'''
     lonlat_islands, dymax_islands = get_islands(resolution)
     n = 1000
@@ -148,7 +148,7 @@ def plot_triangles_meridians(verbose=True, save=False, show=True, dpi=300, resol
         plt.show()
     else: plt.close()
 
-def plot_triangles_rectilinear(verbose=True, save=False, show=True, dpi=300, resolution='c'):
+def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, verbose=True):
     lonlat_islands, dymax_islands = get_islands(resolution)
     plt.figure(figsize=(20, 12))
     plt.title('The dymax face polygons look super-fucked on a rectilinear projection')
@@ -379,18 +379,18 @@ def benchmark(verbose=True):
             (lon_res * lat_res)/(time.time()-start),
             time.time()-start))
 
-def run_examples(verbose=True, save=False, show=True, resolution='c'):
+def run_examples(resolution='c', save=False, show=True, verbose=True):
     '''
     Run all the examples in this file.
     The first part of this is really fast, the image conversion stuff
     '''
     if verbose: print('>> Running Dymax Projection Examples')
     plot_triangles(save=save, show=show)
-    plot_triangles_meridians(save=save, show=show, resolution=resolution)
-    plot_triangles_rectilinear(save=save, show=show, resolution=resolution)
-    plot_lcd_triangles(save=save, show=show, resolution=resolution)
+    plot_triangles_meridians(resolution=resolution, save=save, show=show)
+    plot_triangles_rectilinear(resolution=resolution, save=save, show=show)
+    plot_lcd_triangles(resolution=resolution, save=save, show=show)
     plot_grid(save=save, show=show)
-    plot_coastline_vectors(save=save, show=show, resolution=resolution)
+    plot_coastline_vectors(resolution=resolution, save=save, show=show)
     convert_rectimage_2_dymaximage(PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
     convert_rectimage_2_dymaximage(PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
 
