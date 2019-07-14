@@ -31,7 +31,6 @@ def lonlat2dymax(lon, lat, getlcd=False):
     Lon Lat 2 Dymax XY
 
     This is the primary reason this whole package exists.
-    Last benchmarked at around 13000 points/sec on i7-8550U.
 
     Parameters
     ----------
@@ -58,7 +57,7 @@ def lonlat2dymax(lon, lat, getlcd=False):
     >>> 'x={:.8f}, y={:.8f}'.format(*vert)
     'x=3.30326834, y=1.53381487'
     '''
-    # Convert the given(long.,lat.) coordinate into spherical
+    # Convert the given(lon, lat) coordinate into spherical
     # polar coordinates(r, theta, phi) with radius=1.
     # Angles are given in radians, NOT degrees.
     theta, phi = lonlat2spherical(lon, lat)

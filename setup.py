@@ -19,7 +19,7 @@ setup(
     version=__version__,
     author='Teque5',
     maintainer='Teque5',
-    url=' http://teque5.com',
+    url='http://teque5.com',
     packages=['dymax'],
     description='Dymaxion Fuller Projection Utilities',
     long_description=__doc__,

@@ -376,7 +376,7 @@ def benchmark(verbose=True):
     if verbose:
         print(':: mapped {:d} unique points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(
             lon_res * lat_res,
-            (lon_res * lat_res)/(time.time()-start),
+            (lon_res * lat_res) / (time.time()-start),
             time.time()-start))
 
 def run_examples(resolution='c', save=False, show=True, verbose=True):
