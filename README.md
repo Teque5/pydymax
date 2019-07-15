@@ -1,7 +1,7 @@
 # Dymaxion Projections
 This is a simple geodetic conversion tool for conversion from Lat/Lon to Dymaxion Fuller Map Projection Coordinates.
 
-![Rectilinear Blue Marble](data-rect/bmng.jpg)
+![Rectilinear Blue Marble](dymax/data/bmng.jpg)
 though pixel coordinate conversion becomes
 ![Dymax Blue Marble](docs/dymax_bmng.png)
 
