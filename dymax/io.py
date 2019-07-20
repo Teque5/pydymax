@@ -32,9 +32,9 @@ def get_islands(resolution='c', verbose=True):
         (x_pos, y_pos) pair of dymax coordinates.
     '''
     ### Load Coastlines
-    binfile = open(PKG_DATA+'gshhs_'+resolution+'.dat', 'rb')
-    data = np.fromfile(binfile, '<f4')
-    data = data.reshape(len(data)//2, 2)
+    with open(PKG_DATA+'gshhs_'+resolution+'.dat', 'rb') as binfile:
+        data = np.fromfile(binfile, '<f4')
+        data = data.reshape(len(data)//2, 2)
 
     start = time.time()
     dymaxdata = np.zeros_like(data)
