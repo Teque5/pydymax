@@ -4,11 +4,51 @@
 import os
 import numpy as np
 import pkg_resources
+import struct
 import time
 
 from . import convert
 
 PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
+
+def gshhg2df(filename):
+    '''
+    Convert GSHHG Binary to Pandas DataFrame
+
+    Written for v2.3.7 using API v2.0
+    '''
+    with open(filename, 'rb') as handle:
+        # world vector shoreline
+        # lon, lat
+        wvs = np.empty(shape=(0, 2), dtype=np.int32)
+        # headers
+        # id, n, flag, west, east, south, north, area, area_full, container, ancestor
+        headers = np.empty(shape=(0, 11), dtype=np.int32)
+        while True:
+            try:
+                header = struct.unpack(
+                    '>11i',
+                    handle.read(11*4))
+                coast = struct.unpack(
+                    '>{}i'.format(header[1]*2),
+                    handle.read(header[1]*2*4))
+                # lon, lat
+                coast = np.array(coast, dtype=np.int32).reshape((header[1], 2))
+                # dump
+                wvs = np.vstack((wvs, coast))
+                headers = np.vstack((headers, header))
+            except struct.error:
+                print('{} EOF'.format(filename))
+                break
+    return headers, wvs
+
+    # wvs = pd.DataFrame(data={'lon':data[:, 0], 'lat':data[:, 1]})
+    #
+    # with open(PKG_DATA+'gshhsmeta_'+resolution+'.dat', 'r') as derp:
+    #     places = derp.read()
+    #     places = places.split('\n')
+    #
+    # meta = pd.read_csv(PKG_DATA+'gshhsmeta_'+resolution+'.dat')
 
 def get_islands(resolution='c', verbose=True):
     '''
