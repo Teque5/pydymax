@@ -337,8 +337,8 @@ def run_examples(resolution='c', save=False, show=True, verbose=True):
     plot_lcd_triangles(resolution=resolution, save=save, show=show)
     plot_grid(save=save, show=show)
     plot_coastline_vectors(resolution=resolution, save=save, show=show)
-    convert_rectimage_2_dymaximage(PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
-    convert_rectimage_2_dymaximage(PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
 
 if __name__ == '__main__':
     run_examples()
