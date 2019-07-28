@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 '''Routines to load shoreline data'''
-import h5py
 import lzma
 import os
 import numpy as np
@@ -81,32 +80,6 @@ def load_gshhs_xz(filename):
     # convert microdegrees to degrees
     coasts = coasts.astype(np.float32) / 1e6
     return headers, coasts
-
-def gshhg2hdf5(gshhg_folder, filename='gshhg'):
-    '''
-    Convert GSHHG binaries to single HFD5 file.
-
-    Crude Resolution (25 km) 'c'
-    Low Resolution (5 km) 'l'
-    Intermediate Resolution (1 km) 'i'
-    High Resolution (0.2 km) 'h'
-    Full Resolution (0.04 km) 'f'
-
-    gshss.h5
-      [resolution]/
-        headers/
-        coasts/[number]
-
-    In HDF5 parlance, datasets and sub-objects of groups.
-    '''
-    with lzma.open('{}.h5.xz'.format(filename), 'wb') as lz_handle:
-        with h5py.File(lz_handle, 'w', libver='latest') as h5_handle:
-            for resolution in ['c','l','i','h','f']:
-                source_file = os.path.join(gshhg_folder, 'gshhs_{}.b'.format(resolution))
-                headers, coasts = load_gshhg_binary(source_file)
-                group = h5_handle.create_group(resolution)
-                group.create_dataset('headers', data=headers)#, compression='gzip', compression_opts=9)
-                group.create_dataset('coasts', data=coasts)#, compression='gzip', compression_opts=9)
 
 def get_islands(resolution='c', verbose=True):
     '''
