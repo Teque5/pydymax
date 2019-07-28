@@ -27,8 +27,6 @@ def load_gshhs_xz(filename):
     Returns
     -------
     headers : ndarray of int32
-        cdx : int
-            coastline starting index
         n : int
             number of points in this coastline
         flag : int
@@ -41,13 +39,12 @@ def load_gshhs_xz(filename):
         area_full : int
             Area of original full-resolution polygon in 1/10 km^2.
         container: int
-            Id of container polygon that encloses this polygon (-1 if none)
+            Index of container polygon that encloses this polygon (-1 if none)
         ancestor : int
-            Id of ancestor polygon in the full resolution set that was the source of this polygon (-1 if none)
+            Index of ancestor polygon in the full resolution set that was the source of this polygon (-1 if none)
     wvs : list of ndarray of int32
         WGS84 (lon, lat) vertices in degrees.
     '''
-    cdx = 0 # polygon ID
     with lzma.open(filename, 'rb') as handle:
         # world vector shoreline
         # lon, lat
@@ -66,20 +63,50 @@ def load_gshhs_xz(filename):
                     handle.read(numbytes*2*4))
                 coast = np.array(coast, dtype=np.int32).reshape((numbytes, 2))
                 # dump
-                header = np.array((cdx,) + header[1:3] + header[8:], dtype=np.int32)
-                coasts += [coast]
+                header = np.array(header[1:3] + header[8:], dtype=np.int32)
+                # convert microdegrees to degrees
+                coasts += [coast.astype(np.float32) / 1e6]
                 headers += [header]
-                # increment coast line starting index
-                cdx += len(coast)
-                # print(cdx,end=' ')
             except struct.error:
                 print('{} EOF'.format(filename))
                 break
     headers = np.vstack(headers)
-    coasts = np.vstack(coasts)
-    # convert microdegrees to degrees
-    coasts = coasts.astype(np.float32) / 1e6
     return headers, coasts
+
+def get_dymax_land(resolution='c'):
+    '''
+    Return Dymax Lands
+
+    Parameters
+    ----------
+    resolution : string
+        Resolutions are valid in the following set:
+            Crude Resolution (25 km) 'c'
+            Low Resolution (5 km) 'l'
+            Intermediate Resolution (1 km) 'i'
+            High Resolution (0.2 km) 'h'
+            Full Resolution (0.04 km) 'f'
+
+    Returns
+    -------
+    coasts : list of 2-D ndarrays
+        Each island in list contains an array of N points. Each point is a
+        (lon, lat) pair of WGS84 coordinates.
+    dymax_coasts : list of list of floats
+        Each island in list contains an array of N points. Each point is a
+        (x_pos, y_pos) pair of dymax coordinates.
+    '''
+    dymax_coasts = []
+    headers, coasts = load_gshhs_xz(os.path.join(PKG_DATA,'gshhs_{}.xz'.format(resolution)))
+    for hdx, header in enumerate(headers):
+        dymax_coast = []
+        # only consider land, not islands or lakesd
+        if header[1] & 255 == 1:
+            for cdx in range(header[0]):
+                lon, lat = coasts[hdx][cdx]
+                dymax_coast += [convert.lonlat2dymax(lon, lat)]
+            dymax_coasts += [dymax_coast]
+    return coasts, dymax_coasts
 
 def get_islands(resolution='c', verbose=True):
     '''
@@ -90,7 +117,11 @@ def get_islands(resolution='c', verbose=True):
     ----------
     resolution : string
         Resolutions are valid in the following set:
-        c (crude), l (low), i (intermediate), h (high), f (full)
+            Crude Resolution (25 km) 'c'
+            Low Resolution (5 km) 'l'
+            Intermediate Resolution (1 km) 'i'
+            High Resolution (0.2 km) 'h'
+            Full Resolution (0.04 km) 'f'
     verbose : bool
 
     Returns
