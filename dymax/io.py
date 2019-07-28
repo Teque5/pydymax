@@ -73,7 +73,7 @@ def load_gshhs_xz(filename):
     headers = np.vstack(headers)
     return headers, coasts
 
-def get_dymax_land(resolution='c'):
+def get_dymax_land(resolution='c', filter=[1]):
     '''
     Return Dymax Lands
 
@@ -86,6 +86,8 @@ def get_dymax_land(resolution='c'):
             Intermediate Resolution (1 km) 'i'
             High Resolution (0.2 km) 'h'
             Full Resolution (0.04 km) 'f'
+    filter : list
+        Filter for flag. See load_gshhs_xz for details.
 
     Returns
     -------
@@ -101,7 +103,7 @@ def get_dymax_land(resolution='c'):
     for hdx, header in enumerate(headers):
         dymax_coast = []
         # only consider land, not islands or lakesd
-        if header[1] & 255 == 1:
+        if header[1] & 255 in filter:
             for cdx in range(header[0]):
                 lon, lat = coasts[hdx][cdx]
                 dymax_coast += [convert.lonlat2dymax(lon, lat)]
