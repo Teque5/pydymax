@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 '''Routines to load shoreline data'''
+import h5py
+import lzma
 import os
 import numpy as np
 import pkg_resources
@@ -11,64 +13,100 @@ from . import convert
 
 PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
 
-def gshhg2df(filename):
+def load_gshhs_xz(filename):
     '''
-    Convert GSHHG Binary to Pandas DataFrame
+    Convert GSHHS Binary File to Numpy Arrays
 
-    Written for GSHHG v2.3.7 utilizing API v2.0
+    Written for GSHHS v2.3.7 utilizing API v2.0
+
+    Files were created by using:
+    for res in ['c', 'l', 'i', 'h', 'f']:
+        with open('gshhs_{}.b'.format(res), 'rb') as raw:
+            with open('gshhs_{}.xz'.format(res), 'wb') as out:
+                out.write(lzma.compress(raw.read()))
 
     Returns
     -------
     headers : ndarray of int32
-        int id;         /* Unique polygon id number, starting at 0 */
-        int n;          /* Number of points in this polygon */
-        int flag;       /* = level + version << 8 + greenwich << 16 + source << 24 + river << 25 */
-        /* flag contains 5 items, as follows:
-         * low byte:    level = flag & 255: Values: 1 land, 2 lake, 3 island_in_lake, 4 pond_in_island_in_lake
-         * 2nd byte:    version = (flag >> 8) & 255: Values: Should be 12 for GSHHG release 12 (i.e., version 2.2)
-         * 3rd byte:    greenwich = (flag >> 16) & 1: Values: Greenwich is 1 if Greenwich is crossed
-         * 4th byte:    source = (flag >> 24) & 1: Values: 0 = CIA WDBII, 1 = WVS
-         * 4th byte:    river = (flag >> 25) & 1: Values: 0 = not set, 1 = river-lake and level = 2
-         */
-        int west, east, south, north;   /* min/max extent in micro-degrees */
-        int area;       /* Area of polygon in 1/10 km^2 */
-        int area_full;  /* Area of original full-resolution polygon in 1/10 km^2 */
-        int container;  /* Id of container polygon that encloses this polygon (-1 if none) */
-        int ancestor;   /* Id of ancestor polygon in the full resolution set that was the source of this polygon (-1 if none) */
+        cdx : int
+            coastline starting index
+        n : int
+            number of points in this coastline
+        flag : int
+            (5 items) = level + version << 8 + greenwich << 16 + source << 24 + river << 25
+            low byte:    level = flag & 255: Values: 1 land, 2 lake, 3 island_in_lake, 4 pond_in_island_in_lake
+            2nd byte:    version = (flag >> 8) & 255: Values: Should be 12 for GSHHG release 12 (i.e., version 2.2)
+            3rd byte:    greenwich = (flag >> 16) & 1: Values: Greenwich is 1 if Greenwich is crossed
+            4th byte:    source = (flag >> 24) & 1: Values: 0 = CIA WDBII, 1 = WVS
+            4th byte:    river = (flag >> 25) & 1: Values: 0 = not set, 1 = river-lake and level = 2
+        area_full : int
+            Area of original full-resolution polygon in 1/10 km^2.
+        container: int
+            Id of container polygon that encloses this polygon (-1 if none)
+        ancestor : int
+            Id of ancestor polygon in the full resolution set that was the source of this polygon (-1 if none)
     wvs : list of ndarray of int32
-        WGS84 (lon, lat) vertices in microdegrees.
+        WGS84 (lon, lat) vertices in degrees.
     '''
-    with open(filename, 'rb') as handle:
+    cdx = 0 # polygon ID
+    with lzma.open(filename, 'rb') as handle:
         # world vector shoreline
         # lon, lat
         coasts = []
         # headers
         # id, n, flag, west, east, south, north, area, area_full, container, ancestor
-        headers = np.empty(shape=(0, 11), dtype=np.int32)
+        headers = []
         while True:
             try:
                 header = struct.unpack(
                     '>11i',
                     handle.read(11*4))
+                numbytes = header[1]
                 coast = struct.unpack(
-                    '>{}i'.format(header[1]*2),
-                    handle.read(header[1]*2*4))
-                coast = np.array(coast, dtype=np.int32).reshape((header[1], 2))
+                    '>{}i'.format(numbytes*2),
+                    handle.read(numbytes*2*4))
+                coast = np.array(coast, dtype=np.int32).reshape((numbytes, 2))
                 # dump
+                header = np.array((cdx,) + header[1:3] + header[8:], dtype=np.int32)
                 coasts += [coast]
-                headers = np.vstack((headers, header))
+                headers += [header]
+                # increment coast line starting index
+                cdx += len(coast)
+                # print(cdx,end=' ')
             except struct.error:
                 print('{} EOF'.format(filename))
                 break
+    headers = np.vstack(headers)
+    coasts = np.vstack(coasts)
+    # convert microdegrees to degrees
+    coasts = coasts.astype(np.float32) / 1e6
     return headers, coasts
 
-    # wvs = pd.DataFrame(data={'lon':data[:, 0], 'lat':data[:, 1]})
-    #
-    # with open(PKG_DATA+'gshhsmeta_'+resolution+'.dat', 'r') as derp:
-    #     places = derp.read()
-    #     places = places.split('\n')
-    #
-    # meta = pd.read_csv(PKG_DATA+'gshhsmeta_'+resolution+'.dat')
+def gshhg2hdf5(gshhg_folder, filename='gshhg'):
+    '''
+    Convert GSHHG binaries to single HFD5 file.
+
+    Crude Resolution (25 km) 'c'
+    Low Resolution (5 km) 'l'
+    Intermediate Resolution (1 km) 'i'
+    High Resolution (0.2 km) 'h'
+    Full Resolution (0.04 km) 'f'
+
+    gshss.h5
+      [resolution]/
+        headers/
+        coasts/[number]
+
+    In HDF5 parlance, datasets and sub-objects of groups.
+    '''
+    with lzma.open('{}.h5.xz'.format(filename), 'wb') as lz_handle:
+        with h5py.File(lz_handle, 'w', libver='latest') as h5_handle:
+            for resolution in ['c','l','i','h','f']:
+                source_file = os.path.join(gshhg_folder, 'gshhs_{}.b'.format(resolution))
+                headers, coasts = load_gshhg_binary(source_file)
+                group = h5_handle.create_group(resolution)
+                group.create_dataset('headers', data=headers)#, compression='gzip', compression_opts=9)
+                group.create_dataset('coasts', data=coasts)#, compression='gzip', compression_opts=9)
 
 def get_islands(resolution='c', verbose=True):
     '''
