@@ -35,7 +35,7 @@ def plot_triangles(save=False, show=True, dpi=300, verbose=True):
 
 def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Triangles, All countries, and Meridians'''
-    lonlat_islands, dymax_islands = io.get_islands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     n = 1000
     plt.figure(figsize=(20, 12))
     plt.title('Dymaxion Map Projection')
@@ -95,7 +95,7 @@ def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, ver
     else: plt.close()
 
 def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, verbose=True):
-    lonlat_islands, dymax_islands = io.get_islands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
     plt.title('The dymax face polygons look super-fucked on a rectilinear projection')
     patches = []
@@ -119,7 +119,7 @@ def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, v
     plt.gca().add_collection(p)
     plt.gca().add_collection(f)
     if verbose: print(':: plotted', len(patches), 'coastlines')
-    plt.xlim(-180, 180)
+    plt.xlim(-180, 360)
     plt.ylim(-90, 90)
     if save: plt.savefig('dymax_rectilineartriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
@@ -129,8 +129,7 @@ def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, v
 
 def plot_lcd_triangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Each Icosahedron Face has six sub-triangles that are splitting on.'''
-    lonlat_islands, dymax_islands = io.get_islands(resolution)
-
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
 
     xs, ys = [], []
@@ -223,7 +222,7 @@ def plot_grid(verbose=True, save=False, show=True, dpi=300):
 
 def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Landmasses Only, no Background'''
-    lonlat_islands, dymax_islands = io.get_islands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
 
     patches = []
     for island in dymax_islands:

@@ -2,8 +2,8 @@
 #-*- coding: utf-8 -*-
 '''Routines to load shoreline data'''
 import lzma
-import os
 import numpy as np
+import os
 import pkg_resources
 import struct
 import time
@@ -17,6 +17,8 @@ def load_gshhs_xz(filename):
     Convert GSHHS Binary File to Numpy Arrays
 
     Written for GSHHS v2.3.7 utilizing API v2.0
+    For some insane reason in this version they didn't wrap the coastlines
+    around the longitude discontinutiy correctly.
 
     Files were created by using:
     for res in ['c', 'l', 'i', 'h', 'f']:
@@ -43,7 +45,10 @@ def load_gshhs_xz(filename):
         ancestor : int
             Index of ancestor polygon in the full resolution set that was the source of this polygon (-1 if none)
     wvs : list of ndarray of int32
-        WGS84 (lon, lat) vertices in degrees.
+        lon : float
+            WGS84 Longitude in degrees from (-180, 180)
+        lat : float
+            WGS84 Latitude in degrees from (-90, 90)
     '''
     with lzma.open(filename, 'rb') as handle:
         # world vector shoreline
@@ -65,7 +70,12 @@ def load_gshhs_xz(filename):
                 # dump
                 header = np.array(header[1:3] + header[8:], dtype=np.int32)
                 # convert microdegrees to degrees
-                coasts += [coast.astype(np.float32) / 1e6]
+                coast = coast.astype(np.float32) / 1e6
+                # chang lon from (-180, 360) to (-180, 180)
+                lon = np.radians(coast[:, 0])
+                lon = np.degrees(np.arctan2(np.sin(lon), np.cos(lon)))
+                coast[:, 0] = lon
+                coasts += [coast]
                 headers += [header]
             except struct.error:
                 print('{} EOF'.format(filename))
@@ -73,7 +83,7 @@ def load_gshhs_xz(filename):
     headers = np.vstack(headers)
     return headers, coasts
 
-def get_dymax_land(resolution='c', filter=[1]):
+def get_coastlines(resolution='c'):
     '''
     Return Dymax Lands
 
@@ -103,65 +113,8 @@ def get_dymax_land(resolution='c', filter=[1]):
     for hdx, header in enumerate(headers):
         dymax_coast = []
         # only consider land, not islands or lakesd
-        if header[1] & 255 in filter:
-            for cdx in range(header[0]):
-                lon, lat = coasts[hdx][cdx]
-                dymax_coast += [convert.lonlat2dymax(lon, lat)]
-            dymax_coasts += [dymax_coast]
+        for cdx in range(header[0]):
+            lon, lat = coasts[hdx][cdx]
+            dymax_coast += [convert.lonlat2dymax(lon, lat)]
+        dymax_coasts += [dymax_coast]
     return coasts, dymax_coasts
-
-def get_islands(resolution='c', verbose=True):
-    '''
-    Get coastlines from NOAA's GSHHS
-    Global Self-consistent Hierarchical High-resolution Shorelines
-
-    Parameters
-    ----------
-    resolution : string
-        Resolutions are valid in the following set:
-            Crude Resolution (25 km) 'c'
-            Low Resolution (5 km) 'l'
-            Intermediate Resolution (1 km) 'i'
-            High Resolution (0.2 km) 'h'
-            Full Resolution (0.04 km) 'f'
-    verbose : bool
-
-    Returns
-    -------
-    lonlat_islands : list of 2-D ndarrays
-        Each island in list contains an array of N points. Each point is a
-        (lon, lat) pair of WGS84 coordinates.
-    dymax_islands : ndarray
-        Each island in list contains an array of N points. Each point is a
-        (x_pos, y_pos) pair of dymax coordinates.
-    '''
-    ### Load Coastlines
-    with open(PKG_DATA+'gshhs_'+resolution+'.dat', 'rb') as binfile:
-        data = np.fromfile(binfile, '<f4')
-        data = data.reshape(len(data)//2, 2)
-
-    start = time.time()
-    dymaxdata = np.zeros_like(data)
-    for idx, row in enumerate(data):
-        dymaxdata[idx] = convert.lonlat2dymax(row[0], row[1])
-    if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(len(dymaxdata), len(dymaxdata)/(time.time()-start), time.time()-start))
-
-    ### Load Metadata
-    with open(PKG_DATA+'gshhsmeta_'+resolution+'.dat', 'r') as derp:
-        places = derp.read()
-        places = places.split('\n')
-
-    lonlat_islands = []
-    dymax_islands = []
-    #1, area, numpoints, limit_south, limit_north, startbyte, numbytes, id-(E/W crosses dateline east or west)
-    for place in places:
-        if len(place) < 2: continue
-        column = place.split()
-        #print(column)
-        if float(column[1]) < 500 and resolution == 'c': continue # eliminate tiny area islands
-        start_idx = int(column[5])//8
-        stop_idx = start_idx + int(column[6])//8
-        lonlat_islands += [data[start_idx:stop_idx]]
-        dymax_islands += [dymaxdata[start_idx:stop_idx]]
-    if verbose: print(':: computed', len(places), 'coastlines')
-    return lonlat_islands, dymax_islands
