@@ -381,8 +381,17 @@ def rotate3d(axis, alpha, XYZ, reverse=True):
     return XYZ
 
 @numba.jit
-def ray_trace(x_loc, y_loc, poly):
-    '''determine if position (x_loc, y_loc) is inside polygon'''
+def raytrace(x_loc, y_loc, poly):
+    '''
+    Determine if position (x_loc, y_loc) is inside polygon.
+
+    Examples
+    --------
+    >>> raytrace(2.01, .5, [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]])
+    False
+    >>> raytrace(0.99, .5, [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]])
+    True
+    '''
     psize = len(poly)
     inside = False
     p2x = 0.
