@@ -119,7 +119,7 @@ def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, v
     plt.gca().add_collection(p)
     plt.gca().add_collection(f)
     if verbose: print(':: plotted', len(patches), 'coastlines')
-    plt.xlim(-180, 360)
+    plt.xlim(-180, 180)
     plt.ylim(-90, 90)
     if save: plt.savefig('dymax_rectilineartriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
