@@ -4,7 +4,6 @@
 import os
 import time
 from sys import stdout
-import pkg_resources
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
@@ -13,60 +12,7 @@ from PIL import Image, ImageOps
 
 from . import convert
 from . import constants
-
-PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
-
-def get_islands(resolution='c', verbose=True):
-    '''
-    Get coastlines from NOAA's GSHHS
-    Global Self-consistent Hierarchical High-resolution Shorelines
-
-    Parameters
-    ----------
-    resolution : string
-        Resolutions are valid in the following set:
-        c (crude), l (low), i (intermediate), h (high), f (full)
-    verbose : bool
-
-    Returns
-    -------
-    lonlat_islands : list of 2-D ndarrays
-        Each island in list contains an array of N points. Each point is a
-        (lon, lat) pair of WGS84 coordinates.
-    dymax_islands : ndarray
-        Each island in list contains an array of N points. Each point is a
-        (x_pos, y_pos) pair of dymax coordinates.
-    '''
-    ### Load Coastlines
-    binfile = open(PKG_DATA+'gshhs_'+resolution+'.dat', 'rb')
-    data = np.fromfile(binfile, '<f4')
-    data = data.reshape(len(data)//2, 2)
-
-    start = time.time()
-    dymaxdata = np.zeros_like(data)
-    for idx, row in enumerate(data):
-        dymaxdata[idx] = convert.lonlat2dymax(row[0], row[1])
-    if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(len(dymaxdata), len(dymaxdata)/(time.time()-start), time.time()-start))
-
-    ### Load Metadata
-    with open(PKG_DATA+'gshhsmeta_'+resolution+'.dat', 'r') as derp:
-        places = derp.read()
-        places = places.split('\n')
-
-    lonlat_islands = []
-    dymax_islands = []
-    #1, area, numpoints, limit_south, limit_north, startbyte, numbytes, id-(E/W crosses dateline east or west)
-    for place in places:
-        if len(place) < 2: continue
-        column = place.split()
-        #print(column)
-        if float(column[1]) < 500 and resolution == 'c': continue # eliminate tiny area islands
-        start_idx = int(column[5])//8
-        stop_idx = start_idx + int(column[6])//8
-        lonlat_islands += [data[start_idx:stop_idx]]
-        dymax_islands += [dymaxdata[start_idx:stop_idx]]
-    if verbose: print(':: computed', len(places), 'coastlines')
-    return lonlat_islands, dymax_islands
+from . import io
 
 def plot_triangles(save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Spherical Triangles'''
@@ -89,7 +35,7 @@ def plot_triangles(save=False, show=True, dpi=300, verbose=True):
 
 def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Triangles, All countries, and Meridians'''
-    lonlat_islands, dymax_islands = get_islands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     n = 1000
     plt.figure(figsize=(20, 12))
     plt.title('Dymaxion Map Projection')
@@ -149,7 +95,7 @@ def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, ver
     else: plt.close()
 
 def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, verbose=True):
-    lonlat_islands, dymax_islands = get_islands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
     plt.title('The dymax face polygons look super-fucked on a rectilinear projection')
     patches = []
@@ -173,7 +119,7 @@ def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, v
     plt.gca().add_collection(p)
     plt.gca().add_collection(f)
     if verbose: print(':: plotted', len(patches), 'coastlines')
-    plt.xlim(-180, 180)
+    plt.xlim(-180, 360)
     plt.ylim(-90, 90)
     if save: plt.savefig('dymax_rectilineartriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
@@ -183,8 +129,7 @@ def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, v
 
 def plot_lcd_triangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Each Icosahedron Face has six sub-triangles that are splitting on.'''
-    lonlat_islands, dymax_islands = get_islands(resolution)
-
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
 
     xs, ys = [], []
@@ -277,7 +222,7 @@ def plot_grid(verbose=True, save=False, show=True, dpi=300):
 
 def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Landmasses Only, no Background'''
-    lonlat_islands, dymax_islands = get_islands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
 
     patches = []
     for island in dymax_islands:
@@ -357,28 +302,6 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
         plt.show()
     else: plt.close()
 
-def benchmark(verbose=True):
-    '''
-    simple unique point benchmark
-
-    on i7-8550U, points/sec
-    v1.0.0: 13600
-    v1.0.1: 28000
-    '''
-    lon_res = 1000
-    lat_res = 100
-    lons = np.linspace(-180, 180, lon_res)
-    lats = np.linspace(-90, 90, lat_res)
-    start = time.time()
-    for lat in lats:
-        for lon in lons:
-            _ = convert.lonlat2dymax(lon, lat)
-    if verbose:
-        print(':: mapped {:d} unique points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(
-            lon_res * lat_res,
-            (lon_res * lat_res) / (time.time()-start),
-            time.time()-start))
-
 def run_examples(resolution='c', save=False, show=True, verbose=True):
     '''
     Run all the examples in this file.
@@ -391,8 +314,8 @@ def run_examples(resolution='c', save=False, show=True, verbose=True):
     plot_lcd_triangles(resolution=resolution, save=save, show=show)
     plot_grid(save=save, show=show)
     plot_coastline_vectors(resolution=resolution, save=save, show=show)
-    convert_rectimage_2_dymaximage(PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
-    convert_rectimage_2_dymaximage(PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
 
 if __name__ == '__main__':
     run_examples()
