@@ -5,6 +5,7 @@ import math
 from functools import lru_cache
 import numba
 import numpy as np
+import time
 
 from . import constants
 
@@ -378,6 +379,28 @@ def rotate3d(axis, alpha, XYZ, reverse=True):
                XYZ[2])
 
     return XYZ
+
+def benchmark(verbose=True):
+    '''
+    simple unique point benchmark
+
+    on i7-8550U, points/sec
+    v1.0.0: 13600
+    v1.0.1: 28000
+    '''
+    lon_res = 1000
+    lat_res = 100
+    lons = np.linspace(-180, 180, lon_res)
+    lats = np.linspace(-90, 90, lat_res)
+    start = time.time()
+    for lat in lats:
+        for lon in lons:
+            _ = lonlat2dymax(lon, lat)
+    if verbose:
+        print(':: mapped {:d} unique points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(
+            lon_res * lat_res,
+            (lon_res * lat_res) / (time.time()-start),
+            time.time()-start))
 
 ### Determine (X,Y) Projection Coordinates for Dymaxion Triangle Centers
 dymax_centers = np.zeros((constants.facecount, 2))
