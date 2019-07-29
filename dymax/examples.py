@@ -4,7 +4,6 @@
 import os
 import time
 from sys import stdout
-import pkg_resources
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
@@ -13,49 +12,9 @@ from PIL import Image, ImageOps
 
 from . import convert
 from . import constants
+from . import io
 
-PKG_DATA = pkg_resources.resource_filename('dymax', 'data') + os.path.sep
-
-def getIslands(verbose=True, resolution='c'):
-    '''
-    Get coastlines from GSHHS:
-    Global Self-consistent Hierarchical High-resolution Shorelines
-    Returns outlines in (Lon,Lat) Geodesic and (X,Y) Dymax format.
-
-    Valid resolutions:  c (crude), l (low), i (intermediate), h (high), f (full)
-    '''
-    ### Load Coastlines
-    binfile = open(PKG_DATA+'gshhs_'+resolution+'.dat', 'rb')
-    data = np.fromfile(binfile, '<f4')
-    data = data.reshape(len(data)//2, 2)
-
-    start = time.time()
-    dymaxdata = np.zeros_like(data)
-    for idx, row in enumerate(data):
-        dymaxdata[idx] = convert.lonlat2dymax(row[0], row[1])
-    if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(len(dymaxdata), len(dymaxdata)/(time.time()-start), time.time()-start))
-
-    ### Load Metadata
-    with open(PKG_DATA+'gshhsmeta_'+resolution+'.dat', 'r') as derp:
-        places = derp.read()
-        places = places.split('\n')
-
-    lonlat_islands = []
-    dymax_islands = []
-    #1, area, numpoints, limit_south, limit_north, startbyte, numbytes, id-(E/W crosses dateline east or west)
-    for place in places:
-        if len(place) < 2: continue
-        column = place.split()
-        #print(column)
-        if float(column[1]) < 500 and resolution == 'c': continue # eliminate tiny area islands
-        start_idx = int(column[5])//8
-        stop_idx = start_idx + int(column[6])//8
-        lonlat_islands += [data[start_idx:stop_idx]]
-        dymax_islands += [dymaxdata[start_idx:stop_idx]]
-    if verbose: print(':: computed', len(places), 'coastlines')
-    return lonlat_islands, dymax_islands
-
-def plotTriangles(verbose=True, save=False, show=True, dpi=300):
+def plot_triangles(save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Spherical Triangles'''
     plt.figure(figsize=(20, 12))
     for jdx in range(constants.facecount):
@@ -74,9 +33,9 @@ def plotTriangles(verbose=True, save=False, show=True, dpi=300):
         plt.show()
     else: plt.close()
 
-def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
+def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Triangles, All countries, and Meridians'''
-    lonlat_islands, dymax_islands = getIslands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     n = 1000
     plt.figure(figsize=(20, 12))
     plt.title('Dymaxion Map Projection')
@@ -135,8 +94,8 @@ def plotEarthMeridiansTriangles(verbose=True, save=False, show=True, dpi=300, re
         plt.show()
     else: plt.close()
 
-def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
-    lonlat_islands, dymax_islands = getIslands(resolution)
+def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, verbose=True):
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
     plt.title('The dymax face polygons look super-fucked on a rectilinear projection')
     patches = []
@@ -168,10 +127,9 @@ def plotRectilinearTriangles(verbose=True, save=False, show=True, dpi=300, resol
         plt.show()
     else: plt.close()
 
-def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
+def plot_lcd_triangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Each Icosahedron Face has six sub-triangles that are splitting on.'''
-    lonlat_islands, dymax_islands = getIslands(resolution)
-
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
 
     xs, ys = [], []
@@ -228,7 +186,7 @@ def plotEarthSubTriangles(verbose=True, save=False, show=True, dpi=300, resoluti
         plt.show()
     else: plt.close()
 
-def plotGrid(verbose=True, save=False, show=True, dpi=300):
+def plot_grid(verbose=True, save=False, show=True, dpi=300):
     '''Show Dymaxion Grid'''
     plt.figure(figsize=(20, 12))
     patches = []
@@ -262,21 +220,14 @@ def plotGrid(verbose=True, save=False, show=True, dpi=300):
         plt.show()
     else: plt.close()
 
-def plotLandmasses(verbose=True, save=False, show=True, dpi=300, resolution='c'):
+def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Landmasses Only, no Background'''
-    lonlat_islands, dymax_islands = getIslands(resolution)
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
 
     patches = []
     for island in dymax_islands:
-        #if np.all(island==islands[4]): print (island)
-
-        try: polygon = Polygon(np.array(island), closed=True, fill=True)
-        except:
-            # TODO: FIX THIS SO ITS A SPECIFIC EXCEPTION
-            continue
-        #plt.plot(island[:,0],island[:,1])
+        polygon = Polygon(np.array(island), closed=True, fill=True)
         patches.append(polygon)
-
 
     plt.figure(figsize=(20, 12), frameon=False)
     colors = 100 * np.random.random(len(patches))
@@ -296,7 +247,7 @@ def plotLandmasses(verbose=True, save=False, show=True, dpi=300, resolution='c')
         plt.show()
     else: plt.close()
 
-def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300, speedup=1, save=False, show=True):
+def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=300, speedup=1, save=False, show=True):
     '''
     Convert rectilinear image to dymax projection image.
 
@@ -309,8 +260,7 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300
         final_size_in_pixels = (scale * 5.5, scale * 2.6)
 
     speedup gives a sparse preview of the output image and is specified as a
-    time divisor. On an intel Q6600 14 million points take about 6 minutes.
-    A speedup value of 10 reduces compute time to
+    time divisor.
     '''
     start = time.time()
     im = Image.open(inFilename) #Can be many different formats. #15 vertical and horizontal pixels per degree
@@ -339,16 +289,7 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300
             # Sometimes a point won't map to an edge properly
             except IndexError: print('{{{:d}, {:d}}}'.format(newx, newy), end='')
     if verbose: print()
-    dymaximg = ImageOps.flip(dymaximg) #it's upside down, who cares why
-
-    ### Convert white pixels to transparent (there must be a better way)
-    # print('converting')
-    # dymaximg.convert('RGBA')
-    # pixdata = dymaximg.load()
-    # for y in range(dymaximg.size[1]):
-    #     for x in range(dymaximg.size[0]):
-    #         if pixdata[x, y] == (255, 255, 255, 255):
-    #             pixdata[x, y] = (255, 255, 255, 0)
+    dymaximg = ImageOps.flip(dymaximg) #it's upside down since putpixel flips too
 
     numpoints = im.size[0] * im.size[1] // speedup
     if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(numpoints, numpoints/(time.time()-start), time.time()-start))
@@ -361,20 +302,86 @@ def convertRectImage2DymaxImage(inFilename, outFilename, verbose=True, scale=300
         plt.show()
     else: plt.close()
 
-def run_examples(verbose=True, save=False, show=True, resolution='c'):
+def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
+    '''Draw Dymax Triangles, All countries, and Meridians'''
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
+    # select a face
+    fdx = np.random.randint(0, 20)
+    verts = constants.vert_indices[fdx]
+    # contants.vertices
+    # for vert in verts
+
+    plt.figure(figsize=(20, 20))
+    plt.title('Dymaxion Face {}'.format(fdx))
+    # Plot Edges
+    edges = convert.face2dymax(fdx)
+    plt.plot(edges[:, 0], edges[:, 1], lw=1, alpha=.7, color='r')
+
+    n = 1000 # meridian resolution
+    ### Dymaxion Latitude Meridians
+    lons = np.linspace(-180, 180, n)
+    latgrid = np.linspace(-85, 85, 35)
+    points = []
+    # print(edges)
+    for lat in latgrid:
+        for lon in lons:
+            point = convert.lonlat2dymax(lon, lat)
+            if convert.raytrace(point[0], point[1], edges):
+                points += [point]
+    points = np.array(points)
+    plt.plot(points[:, 0], points[:, 1], ',', color='k', alpha=.5)#,'.',lw=0)#,c=range(n))
+
+    ### Dymaxion Longitude Meridians
+    lats = np.linspace(-85, 85, n)
+    longrid = np.linspace(-180, 175, 72)
+    points = []
+    start = time.time()
+    for lon in longrid:
+        for lat in lats:
+            point = convert.lonlat2dymax(lon, lat)
+            if convert.raytrace(point[0], point[1], edges):
+                points += [point]
+    points = np.array(points)
+    plt.plot(points[:, 0], points[:, 1], ',', color='k', alpha=.5)#,'.',lw=0)#,c=range(n))
+
+    ### Draw Landmasses
+    patches = []
+    for island in dymax_islands:
+        island_closed = []
+        for vertex in island:
+            if convert.raytrace(vertex[0], vertex[1], edges):
+                island_closed += [vertex]
+        if len(island_closed) > 0:
+            polygon = Polygon(np.array(island_closed), closed=True)#, closed=False, fill=False)
+            patches += [polygon]
+    p = PatchCollection(patches, alpha=1, linewidths=.8, edgecolor='k', facecolor='none')
+    plt.gca().add_collection(p)
+    if verbose: print(':: plotted', len(patches), 'coastlines')
+
+    # Draw final figure bits
+    plt.axis('off')
+    plt.gca().set_aspect('equal')
+    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if show:
+        plt.tight_layout()
+        plt.show()
+    else: plt.close()
+
+def run_examples(resolution='c', save=False, show=True, verbose=True):
     '''
     Run all the examples in this file.
     The first part of this is really fast, the image conversion stuff
     '''
     if verbose: print('>> Running Dymax Projection Examples')
-    plotTriangles(save=save, show=show)
-    plotEarthMeridiansTriangles(save=save, show=show, resolution=resolution)
-    plotRectilinearTriangles(save=save, show=show, resolution=resolution)
-    plotEarthSubTriangles(save=save, show=show, resolution=resolution)
-    plotGrid(save=save, show=show)
-    plotLandmasses(save=save, show=show, resolution=resolution)
-    convertRectImage2DymaxImage(PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
-    convertRectImage2DymaxImage(PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
+    plot_triangles(save=save, show=show)
+    plot_triangles_meridians(resolution=resolution, save=save, show=show)
+    plot_triangles_rectilinear(resolution=resolution, save=save, show=show)
+    plot_lcd_triangles(resolution=resolution, save=save, show=show)
+    plot_grid(save=save, show=show)
+    plot_coastline_vectors(resolution=resolution, save=save, show=show)
+    plot_face_hq(resolution=resolution, save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
 
 if __name__ == '__main__':
     run_examples()

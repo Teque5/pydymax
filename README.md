@@ -1,7 +1,7 @@
-# Dymaxion Projection Python Module
+# Dymaxion Projections
 This is a simple geodetic conversion tool for conversion from Lat/Lon to Dymaxion Fuller Map Projection Coordinates.
 
-![Rectilinear Blue Marble](data-rect/bmng.jpg)
+![Rectilinear Blue Marble](dymax/data/bmng.jpg)
 though pixel coordinate conversion becomes
 ![Dymax Blue Marble](docs/dymax_bmng.png)
 
@@ -13,7 +13,7 @@ Technically, to unfold the earth into an icosahedron, we must first consider sli
 
 ![LCD Triangles](docs/dymax_earthsubtriangles.png)
 
-All images in `/docs` and on this page are created by running `dymax.examples.runExamples()`.
+All images in `/docs` and on this page are created by running `python3 -m dymax.examples`.
 
 ## To-Do List
 1) Replace spherical coordinate conversion with Earth-Centered-Earth-Fixed for much better accuracy.
@@ -21,8 +21,14 @@ All images in `/docs` and on this page are created by running `dymax.examples.ru
 
 ## Install
 ```
+pip install dymax
+python3 -m dymax.examples
+```
+
+## Develop
+```
 git clone https://github.com/Teque5/pydymax
-python3 setup.py install
+python3 setup.py develop
 python3 -m dymax.examples
 ```
 

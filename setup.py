@@ -19,11 +19,17 @@ setup(
     version=__version__,
     author='Teque5',
     maintainer='Teque5',
-    url=' http://teque5.com',
+    url='https://github.com/Teque5/pydymax',
     packages=['dymax'],
     description='Dymaxion Fuller Projection Utilities',
     long_description=__doc__,
     license='Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)',
-    install_requires=['numpy','matplotlib','Pillow'],
-    package_data={'dymax': ['data/*.dat', 'data/*.jpg']}
-    )
+    install_requires=['numpy', 'matplotlib', 'Pillow', 'numba'],
+    package_data={'dymax': ['data/*.dat', 'data/*.jpg']},
+    test_suite='tests',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'Topic :: Scientific/Engineering :: GIS',
+        'Topic :: Scientific/Engineering :: Visualization',
+    ],
+)
