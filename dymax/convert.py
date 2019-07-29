@@ -380,6 +380,36 @@ def rotate3d(axis, alpha, XYZ, reverse=True):
 
     return XYZ
 
+@numba.jit
+def raytrace(x_loc, y_loc, poly):
+    '''
+    Determine if position (x_loc, y_loc) is inside polygon.
+
+    Examples
+    --------
+    >>> raytrace(2.01, .5, [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]])
+    False
+    >>> raytrace(0.99, .5, [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]])
+    True
+    '''
+    psize = len(poly)
+    inside = False
+    p2x = 0.
+    p2y = 0.
+    xints = 0.
+    p1x, p1y = poly[0]
+    for pdx in range(psize + 1):
+        p2x, p2y = poly[pdx % psize]
+        if y_loc > min(p1y, p2y):
+            if y_loc <= max(p1y, p2y):
+                if x_loc <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xints = (y_loc-p1y) * (p2x-p1x) / (p2y-p1y) + p1x
+                    if p1x == p2x or x_loc <= xints:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
+    return inside
+
 def benchmark(verbose=True):
     '''
     simple unique point benchmark
