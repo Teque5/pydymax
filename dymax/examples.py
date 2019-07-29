@@ -302,6 +302,71 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
         plt.show()
     else: plt.close()
 
+def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
+    '''Draw Dymax Triangles, All countries, and Meridians'''
+    lonlat_islands, dymax_islands = io.get_coastlines(resolution)
+    # select a face
+    fdx = np.random.randint(0, 20)
+    verts = constants.vert_indices[fdx]
+    # contants.vertices
+    # for vert in verts
+
+    plt.figure(figsize=(20, 20))
+    plt.title('Dymaxion Face {}'.format(fdx))
+    # Plot Edges
+    edges = convert.face2dymax(fdx)
+    plt.plot(edges[:, 0], edges[:, 1], lw=1, alpha=.7, color='r')
+
+    n = 1000 # meridian resolution
+    ### Dymaxion Latitude Meridians
+    lons = np.linspace(-180, 180, n)
+    latgrid = np.linspace(-85, 85, 35)
+    points = []
+    # print(edges)
+    for lat in latgrid:
+        for lon in lons:
+            point = convert.lonlat2dymax(lon, lat)
+            if convert.raytrace(point[0], point[1], edges):
+                points += [point]
+    points = np.array(points)
+    plt.plot(points[:, 0], points[:, 1], ',', color='k', alpha=.5)#,'.',lw=0)#,c=range(n))
+
+    ### Dymaxion Longitude Meridians
+    lats = np.linspace(-85, 85, n)
+    longrid = np.linspace(-180, 175, 72)
+    points = []
+    start = time.time()
+    for lon in longrid:
+        for lat in lats:
+            point = convert.lonlat2dymax(lon, lat)
+            if convert.raytrace(point[0], point[1], edges):
+                points += [point]
+    points = np.array(points)
+    plt.plot(points[:, 0], points[:, 1], ',', color='k', alpha=.5)#,'.',lw=0)#,c=range(n))
+
+    ### Draw Landmasses
+    patches = []
+    for island in dymax_islands:
+        island_closed = []
+        for vertex in island:
+            if convert.raytrace(vertex[0], vertex[1], edges):
+                island_closed += [vertex]
+        if len(island_closed) > 0:
+            polygon = Polygon(np.array(island_closed), closed=True)#, closed=False, fill=False)
+            patches += [polygon]
+    p = PatchCollection(patches, alpha=1, linewidths=.8, edgecolor='k', facecolor='none')
+    plt.gca().add_collection(p)
+    if verbose: print(':: plotted', len(patches), 'coastlines')
+
+    # Draw final figure bits
+    plt.axis('off')
+    plt.gca().set_aspect('equal')
+    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if show:
+        plt.tight_layout()
+        plt.show()
+    else: plt.close()
+
 def run_examples(resolution='c', save=False, show=True, verbose=True):
     '''
     Run all the examples in this file.
@@ -314,6 +379,7 @@ def run_examples(resolution='c', save=False, show=True, verbose=True):
     plot_lcd_triangles(resolution=resolution, save=save, show=show)
     plot_grid(save=save, show=show)
     plot_coastline_vectors(resolution=resolution, save=save, show=show)
+    plot_face_hq(resolution=resolution, save=save, show=show)
     convert_rectimage_2_dymaximage(io.PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
     convert_rectimage_2_dymaximage(io.PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
 
