@@ -21,8 +21,14 @@ All images in `/docs` and on this page are created by running `python3 -m dymax.
 
 ## Install
 ```
+pip install dymax
+python3 -m dymax.examples
+```
+
+## Develop
+```
 git clone https://github.com/Teque5/pydymax
-python3 setup.py install
+python3 setup.py develop
 python3 -m dymax.examples
 ```
 
