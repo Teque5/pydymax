@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Teque5/pydymax.svg?branch=master)](https://travis-ci.org/Teque5/pydymax)
+
 # Dymaxion Projections
 This is a simple geodetic conversion tool for conversion from Lat/Lon to Dymaxion Fuller Map Projection Coordinates.
 
