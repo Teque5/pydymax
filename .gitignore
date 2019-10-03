@@ -6,3 +6,4 @@
 build/
 dist/
 dymax.egg-info/
+.coverage
