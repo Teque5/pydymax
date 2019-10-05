@@ -1,0 +1,15 @@
+---
+sudo: false
+language: python
+python:
+  - 3.6
+cache: pip
+install:
+  - pip install .
+  - pip install pylint # only used for linting on build
+  - pip install coverage # only used for coverage on build
+script:
+  - python setup.py test
+  - coverage run --source=dymax tests/test_*.py
+  - coverage report
+  - pylint --exit-zero -f colorized dymax tests

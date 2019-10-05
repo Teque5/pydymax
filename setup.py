@@ -12,11 +12,14 @@ Where to go from here?
 * `pylint dymax`
 '''
 from setuptools import setup
-from dymax import __version__
+import os, re
+
+with open(os.path.join('dymax', '__init__.py')) as derp:
+    version = re.search(r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]', derp.read()).group(1)
 
 setup(
     name='dymax',
-    version=__version__,
+    version=version,
     author='Teque5',
     maintainer='Teque5',
     url='https://github.com/Teque5/pydymax',
