@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 '''Dymaxion Projection Examples'''
-import os
 import time
 from sys import stdout
 import numpy as np
@@ -36,12 +35,12 @@ def plot_triangles(save=False, show=True, dpi=300, verbose=True):
 def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, verbose=True):
     '''Draw Dymax Triangles, All countries, and Meridians'''
     lonlat_islands, dymax_islands = io.get_coastlines(resolution)
-    n = 1000
+    res = 1000
     plt.figure(figsize=(20, 12))
     plt.title('Dymaxion Map Projection')
 
     ### Dymaxion Latitude Meridians
-    lons = np.linspace(-180, 180, n)
+    lons = np.linspace(-180, 180, res)
     latgrid = np.linspace(-85, 85, 35)
     points = []
     start = time.time()
@@ -53,7 +52,7 @@ def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, ver
     plt.plot(points[:, 0], points[:, 1], ',', c='k', alpha=.3)#,'.',lw=0)#,c=range(n))
 
     ### Dymaxion Longitude Meridians
-    lats = np.linspace(-85, 85, n)
+    lats = np.linspace(-85, 85, res)
     longrid = np.linspace(-180, 175, 72)
     points = []
     start = time.time()
@@ -80,10 +79,10 @@ def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, ver
         polygon = Polygon(np.array(island))#, closed=False, fill=False)
         patches.append(polygon)
 
-    p = PatchCollection(patches, alpha=.3, linewidths=1, facecolors=None)
-    colors = 100*np.random.random(len(patches))
-    p.set_array(np.array(colors))
-    plt.gca().add_collection(p)
+    collect = PatchCollection(patches, alpha=.3, linewidths=1, facecolors=None)
+    colors = 100 * np.random.random(len(patches))
+    collect.set_array(np.array(colors))
+    plt.gca().add_collection(collect)
     if verbose: print(':: plotted', len(patches), 'coastlines')
     plt.gca().set_xlim([0, 5.5])
     plt.gca().set_ylim([0, 2.6])
@@ -111,13 +110,13 @@ def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, v
         polygon = Polygon(derp, closed=False, fill=True)
         faces.append(polygon)
 
-    colors = 100*np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=0.7, linewidths=0)
-    f = PatchCollection(faces, cmap=plt.cm.viridis, alpha=0.3, linewidths=1)
-    p.set_array(np.array(colors))
-    f.set_array(np.array(colors))
-    plt.gca().add_collection(p)
-    plt.gca().add_collection(f)
+    colors = 100 * np.random.random(len(patches))
+    p_collect = PatchCollection(patches, cmap=plt.cm.viridis, alpha=0.7, linewidths=0)
+    f_collect = PatchCollection(faces, cmap=plt.cm.viridis, alpha=0.3, linewidths=1)
+    p_collect.set_array(np.array(colors))
+    f_collect.set_array(np.array(colors))
+    plt.gca().add_collection(p_collect)
+    plt.gca().add_collection(f_collect)
     if verbose: print(':: plotted', len(patches), 'coastlines')
     plt.xlim(-180, 180)
     plt.ylim(-90, 90)
@@ -171,10 +170,10 @@ def plot_lcd_triangles(verbose=True, save=False, show=True, dpi=300, resolution=
         polygon = Polygon(np.array(island), closed=True, fill=True)
         patches.append(polygon)
 
-    colors = 100*np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=.5, linewidths=0)
-    p.set_array(np.array(colors))
-    plt.gca().add_collection(p)
+    colors = 100 * np.random.random(len(patches))
+    collect = PatchCollection(patches, cmap=plt.cm.viridis, alpha=.5, linewidths=0)
+    collect.set_array(np.array(colors))
+    plt.gca().add_collection(collect)
     if verbose: print(':: plotted', len(patches), 'coastlines')
     plt.gca().set_xlim([0, 5.5])
     plt.gca().set_ylim([0, 2.6])
@@ -202,10 +201,10 @@ def plot_grid(verbose=True, save=False, show=True, dpi=300):
         #plt.plot(x,y,'k',lw=.1)
         patches.append(Polygon(np.array([x, y]).T, closed=False, fill=True))
 
-    colors = 100*np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=1, linewidths=0.)
-    p.set_array(np.array(colors))
-    plt.gca().add_collection(p)
+    colors = 100 * np.random.random(len(patches))
+    collect = PatchCollection(patches, cmap=plt.cm.viridis, alpha=1, linewidths=0.)
+    collect.set_array(np.array(colors))
+    plt.gca().add_collection(collect)
     if verbose: print(':: plotted', len(patches), 'coastlines')
     plt.gca().set_aspect('equal')
     plt.gca().set_xlim([0, 5.5])
@@ -231,9 +230,9 @@ def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolut
 
     plt.figure(figsize=(20, 12), frameon=False)
     colors = 100 * np.random.random(len(patches))
-    p = PatchCollection(patches, cmap=plt.cm.viridis, alpha=1, linewidths=0.)
-    p.set_array(np.array(colors))
-    plt.gca().add_collection(p)
+    collect = PatchCollection(patches, cmap=plt.cm.viridis, alpha=1, linewidths=0.)
+    collect.set_array(np.array(colors))
+    plt.gca().add_collection(collect)
     if verbose: print(':: plotted', len(patches), 'coastlines')
     plt.gca().set_aspect('equal')
     plt.gca().set_xlim([0, 5.5])
@@ -317,9 +316,9 @@ def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
     edges = convert.face2dymax(fdx)
     plt.plot(edges[:, 0], edges[:, 1], lw=1, alpha=.7, color='r')
 
-    n = 1000 # meridian resolution
+    res = 1000 # meridian resolution
     ### Dymaxion Latitude Meridians
-    lons = np.linspace(-180, 180, n)
+    lons = np.linspace(-180, 180, res)
     latgrid = np.linspace(-85, 85, 35)
     points = []
     # print(edges)
@@ -332,10 +331,9 @@ def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
     plt.plot(points[:, 0], points[:, 1], ',', color='k', alpha=.5)#,'.',lw=0)#,c=range(n))
 
     ### Dymaxion Longitude Meridians
-    lats = np.linspace(-85, 85, n)
+    lats = np.linspace(-85, 85, res)
     longrid = np.linspace(-180, 175, 72)
     points = []
-    start = time.time()
     for lon in longrid:
         for lat in lats:
             point = convert.lonlat2dymax(lon, lat)
@@ -354,8 +352,8 @@ def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
         if len(island_closed) > 0:
             polygon = Polygon(np.array(island_closed), closed=True)#, closed=False, fill=False)
             patches += [polygon]
-    p = PatchCollection(patches, alpha=1, linewidths=.8, edgecolor='k', facecolor='none')
-    plt.gca().add_collection(p)
+    collect = PatchCollection(patches, alpha=1, linewidths=.8, edgecolor='k', facecolor='none')
+    plt.gca().add_collection(collect)
     if verbose: print(':: plotted', len(patches), 'coastlines')
 
     # Draw final figure bits

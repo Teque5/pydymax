@@ -3,9 +3,9 @@
 '''Dymaxion Projection Conversion Subroutines'''
 import math
 from functools import lru_cache
+import time
 import numba
 import numpy as np
-import time
 
 from . import constants
 

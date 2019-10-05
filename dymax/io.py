@@ -2,11 +2,10 @@
 #-*- coding: utf-8 -*-
 '''Routines to load shoreline data'''
 import lzma
-import numpy as np
 import os
-import pkg_resources
 import struct
-import time
+import pkg_resources
+import numpy as np
 
 from . import convert
 
@@ -109,7 +108,7 @@ def get_coastlines(resolution='c'):
         (x_pos, y_pos) pair of dymax coordinates.
     '''
     dymax_coasts = []
-    headers, coasts = load_gshhs_xz(os.path.join(PKG_DATA,'gshhs_{}.xz'.format(resolution)))
+    headers, coasts = load_gshhs_xz(os.path.join(PKG_DATA, 'gshhs_{}.xz'.format(resolution)))
     for hdx, header in enumerate(headers):
         dymax_coast = []
         # only consider land, not islands or lakesd
