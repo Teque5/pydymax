@@ -3,6 +3,7 @@
 '''Constants for Dymaxion Projection Module'''
 import math
 import numpy as np
+# pylint: disable=bad-whitespace
 
 ### Quick Vector Functions
 magnitude = lambda vector: np.sqrt(np.dot(vector, vector))

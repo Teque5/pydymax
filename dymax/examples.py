@@ -246,7 +246,7 @@ def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolut
         plt.show()
     else: plt.close()
 
-def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=300, speedup=1, save=False, show=True):
+def convert_rectimage_2_dymaximage(input_img_path, output_img_path, verbose=True, scale=300, speedup=1, save=False, show=True):
     '''
     Convert rectilinear image to dymax projection image.
 
@@ -262,7 +262,7 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
     time divisor.
     '''
     start = time.time()
-    im = Image.open(inFilename) #Can be many different formats. #15 vertical and horizontal pixels per degree
+    im = Image.open(input_img_path) #Can be many different formats. #15 vertical and horizontal pixels per degree
     pix = im.load()
     if verbose: print(':: input image resolution =', im.size) # Get the width and hight of the image for iterating over
 
@@ -294,7 +294,7 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
     if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(numpoints, numpoints/(time.time()-start), time.time()-start))
     plt.figure(figsize=(20, 12), frameon=False)
     plt.gca().axis('off')
-    if save: dymaximg.save(outFilename, format='PNG')
+    if save: dymaximg.save(output_img_path, format='PNG')
     if show:
         plt.tight_layout()
         plt.imshow(dymaximg)
