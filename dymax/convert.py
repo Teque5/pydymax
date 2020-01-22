@@ -4,6 +4,7 @@
 import math
 from functools import lru_cache
 import time
+from typing import List, Tuple
 import numba
 import numpy as np
 
@@ -77,6 +78,7 @@ def lonlat2dymax(lon, lat, getlcd=False):
     else:      return x_pos, y_pos
 
 ### Dymax Conversion Subroutines
+@numba.jit
 def vert2dymax(vert, vertset, push=.9999):
     '''
     Convert Vertex Index to XY Position We need to 'nudge' the point a little
@@ -102,7 +104,8 @@ def vert2dymax(vert, vertset, push=.9999):
     x_pos, y_pos = dymax_point(tri, hlcd, XYZ)
     return x_pos, y_pos
 
-def face2dymax(face_idx, push=.9999, atomic=False):
+@numba.jit
+def face2dymax(face_idx: int, push: float=.9999, atomic: bool=False):
     '''
     Convert Icosahedron Face to (4) XY Vertices
 
@@ -152,7 +155,8 @@ def face2dymax(face_idx, push=.9999, atomic=False):
     points[-1] = points[0] # Loop Back to Start
     return points
 
-def lonlat2spherical(lon, lat):
+@numba.njit
+def lonlat2spherical(lon: float, lat: float) -> (float, float):
     '''
     Convert (lon, lat) point into spherical polar coordinates with radius=1.
     Angles are given in radians.
@@ -169,7 +173,8 @@ def lonlat2spherical(lon, lat):
     phi = math.radians(h_phi)
     return theta, phi
 
-def spherical2cartesian(theta, phi):
+@numba.njit
+def spherical2cartesian(theta: float, phi: float) -> (float, float, float):
     '''
     Covert spherical polar coordinates to cartesian coordinates.
     Input angles in radians, output as unit vector.
@@ -184,7 +189,8 @@ def spherical2cartesian(theta, phi):
     z = math.cos(theta)
     return x, y, z
 
-def cartesian2spherical(XYZ):
+@numba.njit
+def cartesian2spherical(XYZ) -> (float, float):
     '''
     Convert Cartesian to Spherical (Non-WGS84)
     Takes a [X,Y,Z] unit vector as input.
@@ -197,7 +203,7 @@ def cartesian2spherical(XYZ):
     theta = math.atan2(XYZ[1], XYZ[0])
     return theta, phi
 
-def fuller_triangle(XYZ):
+def fuller_triangle(XYZ: Tuple[float, float, float]) -> (int, int):
     '''
     Determine which major icosahedron triangle
     and minor lowest common dinominator triangle
@@ -246,7 +252,8 @@ def fuller_triangle(XYZ):
     elif h_dist3 <= h_dist2 <= h_dist1: h_lcd = 3
     return h_tri, h_lcd
 
-def dymax_point(tri, lcd, XYZ):
+#@numba.jit
+def dymax_point(tri: int, lcd: int, XYZ: Tuple[float, float, float]) -> (float, float):
     '''
     In order to rotate the given point into the template spherical
     triangle, we need the spherical polar coordinates of the center
@@ -332,7 +339,8 @@ def dymax_point(tri, lcd, XYZ):
     pointy += ytranslate
     return pointx, pointy
 
-def rotate2d(angle, pointx, pointy):
+@numba.jit
+def rotate2d(angle: float, pointx: float, pointy: float) -> (float, float):
     '''
     Rotate a point orientation in XY-plane around Z
     This function obeys the right hand rule.
@@ -349,7 +357,8 @@ def rotate2d(angle, pointx, pointy):
 
     return pointx, pointy
 
-def rotate3d(axis, alpha, XYZ, reverse=True):
+@numba.jit
+def rotate3d(axis: int, alpha: float, XYZ: Tuple[float, float, float], reverse:bool=True) -> Tuple[float]:
     '''
     Rotate a 3-D point about the specified axis by alpha radians
     For some horrible reason, we are doing left hand rotation.
@@ -362,26 +371,25 @@ def rotate3d(axis, alpha, XYZ, reverse=True):
 
     if axis == 0:
         # Rotate around X
-        XYZ = (XYZ[0],
+        return (XYZ[0],
                XYZ[1] * math.cos(alpha) - XYZ[2] * math.sin(alpha),
                XYZ[1] * math.sin(alpha) + XYZ[2] * math.cos(alpha))
 
     elif axis == 1:
         # Rotate around Y
-        XYZ = (XYZ[0] * math.cos(alpha) + XYZ[2] * math.sin(alpha),
+        return (XYZ[0] * math.cos(alpha) + XYZ[2] * math.sin(alpha),
                XYZ[1],
                -XYZ[0] * math.sin(alpha) + XYZ[2] * math.cos(alpha))
 
     elif axis == 2:
         # Rotate around Z
-        XYZ = (XYZ[0] * math.cos(alpha) - XYZ[1] * math.sin(alpha),
+        return (XYZ[0] * math.cos(alpha) - XYZ[1] * math.sin(alpha),
                XYZ[0] * math.sin(alpha) + XYZ[1] * math.cos(alpha),
                XYZ[2])
 
-    return XYZ
 
 @numba.jit
-def raytrace(x_loc, y_loc, poly):
+def raytrace(x_loc: float, y_loc: float, poly: list) -> bool:
     '''
     Determine if position (x_loc, y_loc) is inside polygon.
 
