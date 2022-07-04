@@ -3,9 +3,16 @@
 '''Constants for Dymaxion Projection Module'''
 import math
 import numpy as np
+from enum import Enum
 
 ### Quick Vector Functions
 magnitude = lambda vector: np.sqrt(np.dot(vector, vector))
+
+### Face arrangement
+class Unfolding(Enum):
+    LAND = 0
+    OCEAN = 1
+    NET = 2
 
 ### Icosahedron Time
 facecount, vertexcount = 20, 12
@@ -61,20 +68,42 @@ dymax_translate = np.array([         [2.0, 7 / (2 * math.sqrt(3)), 240],
                                      [1.5, 4 * math.sqrt(3) / 3.0, 300],
                                      [1.0, 5 / (2 * math.sqrt(3)), 300],
                                      [1.5, 2 / math.sqrt(3),         0],
-                                     [2.0, 1 / (2 * math.sqrt(3)),   0],
+                                     [1.5, 1 / math.sqrt(3),       300],
                                      [2.5, 1 / math.sqrt(3),        60],
                                      [3.5, 1 / math.sqrt(3),        60],
                                      [3.5, 2 / math.sqrt(3),       120],
                                      [4.0, 5 / (2 * math.sqrt(3)),  60],
                                      [4.0, 7 / (2 * math.sqrt(3)),   0],
                                      [5.0, 7 / (2 * math.sqrt(3)),   0],
-                                     [5.5, 2 / math.sqrt(3),         0],
+                                     [0.5, 1 / math.sqrt(3),        60],
                                      [1.0, 1 / (2 * math.sqrt(3)),   0],
                                      [4.0, 1 / (2 * math.sqrt(3)), 120],
                                      [4.5, 2 / math.sqrt(3),         0],
                                      [5.0, 5 / (2 * math.sqrt(3)),  60]])
-dymax_translate08_special = np.array([1.5, 1 / math.sqrt(3),       300]) # if LCD < 4
-dymax_translate15_special = np.array([0.5, 1 / math.sqrt(3),        60]) # if LCD < 3
+dymax_translate08_special = np.array([2.0, 1 / (2 * math.sqrt(3)),   0]) # if LCD >= 4
+dymax_translate15_special = np.array([5.5, 2 / math.sqrt(3),         0]) # if LCD >= 3
+
+dymax_ocean_translate = np.array([         [5.0, 5 / (2 * math.sqrt(3)), 300],
+                                           [0.5, 4 / (2 * math.sqrt(3)),   0],
+                                           [1.0, 5 / (2 * math.sqrt(3)),  60],
+                                           [1.0, 7 / (2 * math.sqrt(3)), 120],
+                                           [4.5, 8 / (2 * math.sqrt(3)), 300],
+                                           [4.5, 4 / (2 * math.sqrt(3)),   0],
+                                           [4.0, 1 / (2 * math.sqrt(3)), 240],
+                                           [1.0, 1 / (2 * math.sqrt(3)), 120],
+                                           [1.5, 2 / (2 * math.sqrt(3)),  60],
+                                           [1.5, 4 / (2 * math.sqrt(3)), 120],
+                                           [2.0, 5 / (2 * math.sqrt(3)),  60],
+                                           [2.0, 7 / (2 * math.sqrt(3)), 120],
+                                           [3.0, 7 / (2 * math.sqrt(3)),   0],
+                                           [4.0, 7 / (2 * math.sqrt(3)), 240],
+                                           [4.0, 5 / (2 * math.sqrt(3)), 300],
+                                           [3.5, 2 / (2 * math.sqrt(3)), 300],
+                                           [2.5, 2 / (2 * math.sqrt(3)), 180],
+                                           [2.5, 4 / (2 * math.sqrt(3)), 120],
+                                           [3.0, 5 / (2 * math.sqrt(3)), 300],
+                                           [3.5, 4 / (2 * math.sqrt(3)),   0]])
+dymax_ocean_translate08_special = np.array([2.0, 1 / (2 * math.sqrt(3)), 120]) # if LCD == 2 or LCD == 3
 
 ### Optimizations
 garc = 2 * math.asin(math.sqrt( (5 - math.sqrt(5)) / 10))
