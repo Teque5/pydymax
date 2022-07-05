@@ -27,7 +27,7 @@ def euclidean(vec_a, vec_b):
 
 ### Dymax Conversion Main Routine
 @lru_cache(maxsize=2**12)
-def lonlat2dymax(lon, lat, getlcd=False):
+def lonlat2dymax(lon, lat, getlcd=False, unfolding=constants.Unfolding.LAND):
     '''
     Lon Lat 2 Dymax XY
 
@@ -71,7 +71,7 @@ def lonlat2dymax(lon, lat, getlcd=False):
     tri, lcd = fuller_triangle(XYZ)
 
     # Determine the corresponding Fuller map plane(x, y) point
-    x_pos, y_pos = dymax_point(tri, lcd, XYZ)
+    x_pos, y_pos = dymax_point(tri, lcd, XYZ, unfolding)
 
     if getlcd: return x_pos, y_pos, lcd
     else:      return x_pos, y_pos
@@ -102,7 +102,7 @@ def vert2dymax(vert, vertset, push=.9999):
     x_pos, y_pos = dymax_point(tri, hlcd, XYZ)
     return x_pos, y_pos
 
-def face2dymax(face_idx, push=.9999, atomic=False):
+def face2dymax(face_idx, push=.9999, atomic=False, unfolding=constants.Unfolding.LAND):
     '''
     Convert Icosahedron Face to (4) XY Vertices
 
@@ -141,13 +141,13 @@ def face2dymax(face_idx, push=.9999, atomic=False):
                 XYZ = np.mean([up, down], axis=0)
             XYZ = XYZ * push + constants.XYZcenters[face_idx] * (1-push)
             tri, hlcd = fuller_triangle(XYZ)
-            points[jdx] = dymax_point(tri, hlcd, XYZ)
+            points[jdx] = dymax_point(tri, hlcd, XYZ, unfolding)
     else:
         points = np.zeros((3+1, 2))
         for jdx in range(3):
             XYZ = constants.vertices[constants.vert_indices[face_idx, jdx]] * push + constants.XYZcenters[face_idx] * (1-push)
             tri, hlcd = fuller_triangle(XYZ)
-            points[jdx] = dymax_point(tri, hlcd, XYZ)
+            points[jdx] = dymax_point(tri, hlcd, XYZ, unfolding)
 
     points[-1] = points[0] # Loop Back to Start
     return points
@@ -246,7 +246,7 @@ def fuller_triangle(XYZ):
     elif h_dist3 <= h_dist2 <= h_dist1: h_lcd = 3
     return h_tri, h_lcd
 
-def dymax_point(tri, lcd, XYZ):
+def dymax_point(tri, lcd, XYZ, unfolding=constants.Unfolding.LAND):
     '''
     In order to rotate the given point into the template spherical
     triangle, we need the spherical polar coordinates of the center
@@ -261,6 +261,8 @@ def dymax_point(tri, lcd, XYZ):
         Dymaxion sub-triangle where we want to be.
     XYZ : tuple of floats
         Pseudo-ECEF coordinate that will be projected to dymaxion.
+    unfolding: enum
+        Either LAND, OCEAN or NET.
 
     Returns
     -------
@@ -320,10 +322,18 @@ def dymax_point(tri, lcd, XYZ):
 
     ### Move and Rotate as Appropriate
     # You can disable the special translations for uniform triangles
-    if   tri == 8  and lcd < 4:
-        xtranslate, ytranslate, rotation = constants.dymax_translate08_special
-    elif tri == 15 and lcd < 3:
-        xtranslate, ytranslate, rotation = constants.dymax_translate15_special
+    if unfolding == constants.Unfolding.LAND:
+        if   tri == 8  and lcd >= 4:
+            xtranslate, ytranslate, rotation = constants.dymax_translate08_special
+        elif tri == 15 and lcd >= 3:
+            xtranslate, ytranslate, rotation = constants.dymax_translate15_special
+        else:
+            xtranslate, ytranslate, rotation = constants.dymax_translate[tri]
+    elif unfolding == constants.Unfolding.OCEAN:
+        if tri == 8 and (lcd == 2 or lcd == 3):
+            xtranslate, ytranslate, rotation = constants.dymax_ocean_translate08_special
+        else:
+            xtranslate, ytranslate, rotation = constants.dymax_ocean_translate[tri]
     else:
         xtranslate, ytranslate, rotation = constants.dymax_translate[tri]
 
@@ -437,4 +447,4 @@ def benchmark(verbose=True):
 dymax_centers = np.zeros((constants.facecount, 2))
 for fdx in range(constants.facecount):
     tri, hlcd = fuller_triangle(constants.XYZcenters[fdx])
-    dymax_centers[fdx] = dymax_point(tri, hlcd, constants.XYZcenters[fdx])
+    dymax_centers[fdx] = dymax_point(tri, hlcd, constants.XYZcenters[fdx], constants.Unfolding.LAND)

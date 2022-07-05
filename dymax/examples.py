@@ -247,7 +247,7 @@ def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolut
         plt.show()
     else: plt.close()
 
-def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=300, speedup=1, save=False, show=True):
+def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=300, speedup=1, unfolding=constants.Unfolding.LAND, save=False, show=True):
     '''
     Convert rectilinear image to dymax projection image.
 
@@ -282,7 +282,7 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
             stdout.flush() # I would add flush=True to print, but thats only in python3.3+
         for j, lat in enumerate(np.linspace(90, -90, ysize/speedup, endpoint=True)):
             j *= speedup
-            newx, newy = convert.lonlat2dymax(lon, lat)
+            newx, newy = convert.lonlat2dymax(lon, lat, unfolding=unfolding)
             newx = int(newx*scale) - 1
             newy = int(newy*scale)
             try: dymaximg.putpixel((newx, newy), pix[i, j])
@@ -361,7 +361,7 @@ def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
     # Draw final figure bits
     plt.axis('off')
     plt.gca().set_aspect('equal')
-    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if save: plt.savefig('dymax_face.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
@@ -381,7 +381,9 @@ def run_examples(resolution='c', save=False, show=True, verbose=True):
     plot_coastline_vectors(resolution=resolution, save=save, show=show)
     plot_face_hq(resolution=resolution, save=save, show=show)
     convert_rectimage_2_dymaximage(io.PKG_DATA+'bmng.jpg', 'dymax_bmng.png', save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'bmng.jpg', 'dymax_net_bmng.png', unfolding=constants.Unfolding.NET, save=save, show=show)
     convert_rectimage_2_dymaximage(io.PKG_DATA+'etopo1.jpg', 'dymax_etopo1.png', save=save, show=show)
+    convert_rectimage_2_dymaximage(io.PKG_DATA+'etopo1.jpg', 'dymax_ocean_etopo1.png', unfolding=constants.Unfolding.OCEAN, save=save, show=show)
 
 if __name__ == '__main__':
     run_examples()

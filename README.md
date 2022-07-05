@@ -17,6 +17,10 @@ Technically, to unfold the earth into an icosahedron, we must first consider sli
 
 All images in `/docs` and on this page are created by running `python3 -m dymax.examples`.
 
+SVG files suitable for printing and folding into an icosahedron are in `/svg`.  They reference images in `/docs`. Open the SVG file in a text editor and change the image reference to use a different map.
+
+![Icosahedron net](svg/a4_dymaxion.svg)
+
 ## To-Do List
 1) Replace spherical coordinate conversion with Earth-Centered-Earth-Fixed for much better accuracy.
 2) Get documentation working correctly.
@@ -49,6 +53,6 @@ xy_projection = dymax.lonlat2dymax(-118.0367, 34.8951)
 *pydymax* code is [Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 ## References
-* [Mike Bostock's](https://github.com/mbostock) [javascript code](http://mbostock.github.io/protovis/ex/dymax.js) and [http://mbostock.github.io/protovis/ex/dymax.html](live demo)
+* [Mike Bostock's](https://github.com/mbostock) [javascript code](http://mbostock.github.io/protovis/ex/dymax.js) and [live demo](https://mbostock.github.io/protovis/ex/dymax.html)
 * [general info on dymax/fuller projections](http://www.progonos.com/furuti/MapProj/Normal/ProjPoly/projPoly3.html)
 * [The big wiki article on Dymaxion Maps](http://en.wikipedia.org/wiki/Dymaxion_map)
