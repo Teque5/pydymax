@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
 '''Constants for Dymaxion Projection Module'''
 import math
 import numpy as np

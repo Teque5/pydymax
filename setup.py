@@ -4,8 +4,7 @@
 Geodetic Conversion from Lat/Lon to Dymaxion Fuller Projection
 
 Where to go from here?
-* `python3 setup.py develop`
-* `python3 setup.py install`
+* `pip install --editable .`
 * `python3 -m dymax.examples`
 * `python3 setup.py test`
 * `pytest --doctest-modules`

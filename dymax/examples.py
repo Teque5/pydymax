@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
 '''Dymaxion Projection Examples'''
 import os
 import time
@@ -14,7 +13,7 @@ from . import convert
 from . import constants
 from . import io
 
-def plot_triangles(save=False, show=True, dpi=300, verbose=True):
+def plot_triangles(save:bool=False, show:bool=True, dpi:int=300, verbose:bool=True):
     '''Draw Dymax Spherical Triangles'''
     plt.figure(figsize=(20, 12))
     for jdx in range(constants.facecount):
@@ -26,14 +25,17 @@ def plot_triangles(save=False, show=True, dpi=300, verbose=True):
     plt.gca().set_xlim([0, 5.5])
     plt.gca().set_ylim([0, 2.6])
     plt.gca().set_aspect('equal')
-    if verbose: print(':: plotted', constants.facecount, 'triangles')
-    if save: plt.savefig('dymax_triangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if verbose:
+        print(':: plotted', constants.facecount, 'triangles')
+    if save:
+        plt.savefig('dymax_triangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
-def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, verbose=True):
+def plot_triangles_meridians(resolution:str='c', save:bool=False, show:bool=True, dpi:int=300, verbose:bool=True):
     '''Draw Dymax Triangles, All countries, and Meridians'''
     lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     n = 1000
@@ -48,9 +50,11 @@ def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, ver
     for lat in latgrid:
         for lon in lons:
             points += [convert.lonlat2dymax(lon, lat)]
-    if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(len(points), len(points)/(time.time()-start), time.time()-start))
+    if verbose:
+        print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(
+            len(points), len(points)/(time.time()-start), time.time()-start))
     points = np.array(points)
-    plt.plot(points[:, 0], points[:, 1], ',', c='k', alpha=.3)#,'.',lw=0)#,c=range(n))
+    plt.plot(points[:, 0], points[:, 1], ',', c='k', alpha=.3)
 
     ### Dymaxion Longitude Meridians
     lats = np.linspace(-85, 85, n)
@@ -60,9 +64,10 @@ def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, ver
     for lon in longrid:
         for lat in lats:
             points += [convert.lonlat2dymax(lon, lat)]
-    if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(len(points), len(points)/(time.time()-start), time.time()-start))
+    if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(
+                    len(points), len(points)/(time.time()-start), time.time()-start))
     points = np.array(points)
-    plt.plot(points[:, 0], points[:, 1], ',', c='k', alpha=.3)#,'.',lw=0)#,c=range(n))
+    plt.plot(points[:, 0], points[:, 1], ',', c='k', alpha=.3)
 
     ### Dymaxion Face Tiles
     for jdx in range(constants.facecount):
@@ -88,13 +93,15 @@ def plot_triangles_meridians(resolution='c', save=False, show=True, dpi=300, ver
     plt.gca().set_xlim([0, 5.5])
     plt.gca().set_ylim([0, 2.6])
     plt.gca().set_aspect('equal')
-    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if save:
+        plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
-def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, verbose=True):
+def plot_triangles_rectilinear(resolution:str='c', save:bool=False, show:bool=True, dpi:int=300, verbose:bool=True):
     lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
     plt.title('The dymax face polygons look super-fucked on a rectilinear projection')
@@ -121,13 +128,15 @@ def plot_triangles_rectilinear(resolution='c', save=False, show=True, dpi=300, v
     if verbose: print(':: plotted', len(patches), 'coastlines')
     plt.xlim(-180, 180)
     plt.ylim(-90, 90)
-    if save: plt.savefig('dymax_rectilineartriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if save:
+        plt.savefig('dymax_rectilineartriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
-def plot_lcd_triangles(verbose=True, save=False, show=True, dpi=300, resolution='c'):
+def plot_lcd_triangles(verbose:bool=True, save:bool=False, show:bool=True, dpi:int=300, resolution:str='c'):
     '''Each Icosahedron Face has six sub-triangles that are splitting on.'''
     lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     plt.figure(figsize=(20, 12))
@@ -180,13 +189,15 @@ def plot_lcd_triangles(verbose=True, save=False, show=True, dpi=300, resolution=
     plt.gca().set_ylim([0, 2.6])
     plt.gca().set_aspect('equal')
 
-    if save: plt.savefig('dymax_earthsubtriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if save:
+        plt.savefig('dymax_earthsubtriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
-def plot_grid(verbose=True, save=False, show=True, dpi=300):
+def plot_grid(verbose:bool=True, save:bool=False, show:bool=True, dpi:int=300):
     '''Show Dymaxion Grid'''
     plt.figure(figsize=(20, 12))
     patches = []
@@ -214,11 +225,13 @@ def plot_grid(verbose=True, save=False, show=True, dpi=300):
     plt.gca().get_yaxis().set_visible(False)
     plt.gca().axis('off')
 
-    if save: plt.savefig('dymax_grid.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if save:
+        plt.savefig('dymax_grid.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
 def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolution='c'):
     '''Draw Landmasses Only, no Background'''
@@ -241,13 +254,15 @@ def plot_coastline_vectors(verbose=True, save=False, show=True, dpi=300, resolut
     plt.gca().get_xaxis().set_visible(False)
     plt.gca().get_yaxis().set_visible(False)
     plt.gca().axis('off')
-    if save: plt.savefig('dymax_landmasses.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if save:
+        plt.savefig('dymax_landmasses.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
-def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=300, speedup=1, save=False, show=True):
+def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose:bool=True, scale:float=300, speedup:int=1, save:bool=False, show:bool=True):
     '''
     Convert rectilinear image to dymax projection image.
 
@@ -259,11 +274,11 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
         __OR__
         final_size_in_pixels = (scale * 5.5, scale * 2.6)
 
-    speedup gives a sparse preview of the output image and is specified as a
-    time divisor.
+    speedup gives a sparse preview of the output image and is specified as a time divisor.
     '''
     start = time.time()
-    im = Image.open(inFilename) #Can be many different formats. #15 vertical and horizontal pixels per degree
+    # Can be many different formats; 15 vertical and horizontal pixels per degree
+    im = Image.open(inFilename)
     pix = im.load()
     if verbose: print(':: input image resolution =', im.size) # Get the width and hight of the image for iterating over
 
@@ -275,12 +290,12 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
     ### X and Y are indexed from topleft to bottom right
     if verbose: print(':: sweeping over Longitudes:')
     xsize, ysize = im.size
-    for i, lon in enumerate(np.linspace(-180, 180, xsize/speedup, endpoint=True)):
+    for i, lon in enumerate(np.linspace(-180, 180, int(xsize/speedup), endpoint=True)):
         i *= speedup
         if i % 20 == 0:
             print('{:+07.2f} '.format(lon), end='')
             stdout.flush() # I would add flush=True to print, but thats only in python3.3+
-        for j, lat in enumerate(np.linspace(90, -90, ysize/speedup, endpoint=True)):
+        for j, lat in enumerate(np.linspace(90, -90, int(ysize/speedup), endpoint=True)):
             j *= speedup
             newx, newy = convert.lonlat2dymax(lon, lat)
             newx = int(newx*scale) - 1
@@ -295,14 +310,16 @@ def convert_rectimage_2_dymaximage(inFilename, outFilename, verbose=True, scale=
     if verbose: print(':: mapped {:d} points to dymax projection @ {:.1f} pts/sec [{:.1f} secs total]'.format(numpoints, numpoints/(time.time()-start), time.time()-start))
     plt.figure(figsize=(20, 12), frameon=False)
     plt.gca().axis('off')
-    if save: dymaximg.save(outFilename, format='PNG')
+    if save:
+        dymaximg.save(outFilename, format='PNG')
     if show:
         plt.tight_layout()
         plt.imshow(dymaximg)
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
-def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
+def plot_face_hq(resolution:str='i', save:bool=False, show:bool=True, verbose:bool=True, dpi:int=300):
     '''Draw Dymax Triangles, All countries, and Meridians'''
     lonlat_islands, dymax_islands = io.get_coastlines(resolution)
     # select a face
@@ -361,13 +378,15 @@ def plot_face_hq(resolution='i', save=False, show=True, verbose=True, dpi=300):
     # Draw final figure bits
     plt.axis('off')
     plt.gca().set_aspect('equal')
-    if save: plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
+    if save:
+        plt.savefig('dymax_earthmeridianstriangles.png', bbox_inches='tight', dpi=dpi, transparent=True, pad_inches=0)
     if show:
         plt.tight_layout()
         plt.show()
-    else: plt.close()
+    else:
+        plt.close()
 
-def run_examples(resolution='c', save=False, show=True, verbose=True):
+def run_examples(resolution:str='c', save:bool=False, show:bool=True, verbose:bool=True):
     '''
     Run all the examples in this file.
     The first part of this is really fast, the image conversion stuff

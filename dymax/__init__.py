@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 '''dymax converts (Lon, Lat) to (X,Y) Dymaxion Fuller Projection'''
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 from .constants import *
 from .convert import *

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-#-*- coding: utf-8 -*-
 '''Dymaxion Projection Conversion Subroutines'''
 import math
 from functools import lru_cache
@@ -19,7 +17,7 @@ def magnitude(vec):
 
 @numba.njit(fastmath=True)
 def euclidean(vec_a, vec_b):
-    '''N-Dimensional Vector L2 Norm; runs in 270ns'''
+    '''N-Dimensional Vector L2 Norm'''
     acc = 0
     for idx in range(len(vec_a)):
         acc += (vec_a[idx] - vec_b[idx])**2
@@ -40,8 +38,7 @@ def lonlat2dymax(lon, lat, getlcd=False):
     lat : float
         Latitude in radians.
     getlcd : bool, optional(default False)
-        Set to return the LCD triangle index. You get it for free when computing
-        position in triangle.
+        Set to return the LCD triangle index. You get it for free when computing position in triangle.
 
     Returns
     -------
@@ -79,10 +76,11 @@ def lonlat2dymax(lon, lat, getlcd=False):
 ### Dymax Conversion Subroutines
 def vert2dymax(vert, vertset, push=.9999):
     '''
-    Convert Vertex Index to XY Position We need to 'nudge' the point a little
-    bit into the triangle. Without the nudge, the vertices would be exactly
-    between dymaxion faces and wouldn't make sense for plotting. Hence we do a
-    weighted average with point idx having a massive weight
+    Convert Vertex Index to XY Position
+
+    We need to 'nudge' the point a little bit into the triangle.
+    Without the nudge, the vertices would be exactly between dymaxion faces and wouldn't make sense for plotting.
+    Hence we do a weighted average with point idx having a massive weight.
 
     Example
     -------
@@ -340,7 +338,6 @@ def rotate2d(angle, pointx, pointy):
     >>> rotate2d(90,.5,1)
     (-1.0, 0.5000000000000001)
     '''
-
     ha = math.radians(angle)
     hx = pointx
     hy = pointy
@@ -380,7 +377,6 @@ def rotate3d(axis, alpha, XYZ, reverse=True):
 
     return XYZ
 
-@numba.jit
 def raytrace(x_loc, y_loc, poly):
     '''
     Determine if position (x_loc, y_loc) is inside polygon.
@@ -418,6 +414,7 @@ def benchmark(verbose=True):
     v1.0.0: 13600
     v1.1.0: 28000
     v1.1.1: 18300
+    v1.1.3: 16000
     '''
     lon_res = 1000
     lat_res = 100
@@ -438,3 +435,6 @@ dymax_centers = np.zeros((constants.facecount, 2))
 for fdx in range(constants.facecount):
     tri, hlcd = fuller_triangle(constants.XYZcenters[fdx])
     dymax_centers[fdx] = dymax_point(tri, hlcd, constants.XYZcenters[fdx])
+
+if __name__ == '__main__':
+    benchmark()

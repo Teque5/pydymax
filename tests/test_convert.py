@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#-*- coding: utf-8 -*-
+#!/usr/bin/env python3
 '''Test cases for pydymax conversion utilities.'''
 import unittest
 import numpy as np
